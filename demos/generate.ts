@@ -639,7 +639,7 @@ ${embeddedThemeCss}
     <div class="hero">
       <div>
         <h1>tree-sitter-ts-highlight</h1>
-        <p class="subtitle">A product demo for parser-based syntax highlighting, semantic rendering, and diff visualization.</p>
+        <p class="subtitle">Interactive demos for parser-based syntax highlighting, semantic rendering, and diff exploration.</p>
       </div>      
     </div>
 
@@ -664,14 +664,11 @@ ${embeddedThemeCss}
         <label class="check"><input id="customInput" type="checkbox" /> Use custom input</label>
         <button id="dslBtn" type="button">Register custom DSL profile</button>
       </div>
-      <p id="runtimeStatus" class="small" style="margin-top:8px">Loading runtime...</p>
-      <p class="small" style="margin-top:10px">Tip: run <strong>npm run build</strong> then <strong>npm run demo:generate</strong> to refresh this single-file demo for GitHub Pages/static hosting.</p>
     </div>
 
     <nav class="tab-nav" aria-label="Demo sections">
       <button class="tab-btn active" type="button" data-view-target="playground">Highlight Playground</button>
       <button class="tab-btn" type="button" data-view-target="diff">Diff Explorer</button>
-      <button class="tab-btn" type="button" data-view-target="why">Why This Library</button>
     </nav>
 
     <section class="view active" id="view-playground" data-view="playground">
@@ -737,33 +734,10 @@ ${embeddedThemeCss}
       </div>
     </section>
 
-    <section class="view" id="view-why" data-view="why">
-      <div class="panel">
-        <h2>Why use this library?</h2>
-        <p class="muted">Compared with regex-based highlighters, this demo shows tree-sitter-ts benefits in practice:</p>
-        <ul>
-          <li>Semantic reclassification (same token stream, richer visual contrast for properties/types/variables).</li>
-          <li>Language profile extension at runtime (register custom DSL without plugin recompilation).</li>
-          <li>Code structure extraction via <strong>extractSymbols()</strong> for editor-like features.</li>
-          <li>First-class HTML diff output plus <strong>diffModel()</strong> for custom wrappers.</li>          
-        </ul>
-      </div>
-    </section>
   </div>
 
   <script type="module">
-    const runtimeStatus = document.getElementById("runtimeStatus");
-
-    function setRuntimeStatus(level, text) {
-      if (!runtimeStatus) return;
-      runtimeStatus.textContent = text;
-      runtimeStatus.setAttribute("data-level", level);
-    }
-
-    setRuntimeStatus("warn", "Loading runtime...");
-
     let demoApi;
-    let runtimeSource;
     try {
       const [highlightMod, parserMod] = await Promise.all([
         import("tree-sitter-ts-highlight"),
@@ -779,13 +753,7 @@ ${embeddedThemeCss}
         registerProfile: parserMod.registerProfile,
       };
 
-      const highlightSource = "__source" in highlightMod ? highlightMod.__source : "tree-sitter-ts-highlight";
-      const parserSource = "__source" in parserMod ? parserMod.__source : "tree-sitter-ts";
-      runtimeSource = String(highlightSource) + " + " + String(parserSource);
-      setRuntimeStatus("ok", "Runtime: " + runtimeSource);
     } catch (error) {
-      const message = String(error && error.message ? error.message : error);
-      setRuntimeStatus("error", "Runtime failed: " + message);
       throw error;
     }
 
@@ -871,7 +839,7 @@ ${embeddedThemeCss}
 
     function currentViewFromHash() {
       const hash = (window.location.hash || "").replace(/^#/, "");
-      if (hash === "diff" || hash === "why" || hash === "playground") {
+      if (hash === "diff" || hash === "playground") {
         return hash;
       }
       return "playground";
