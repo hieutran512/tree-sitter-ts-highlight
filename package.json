@@ -1,6 +1,6 @@
 {
   "name": "tree-sitter-ts-highlight",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Syntax highlighting library built on tree-sitter-ts. HTML, ANSI, and decorations.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -42,7 +42,7 @@
     "test:watch": "tsx scripts/run-jest.ts --watch"
   },
   "peerDependencies": {
-    "tree-sitter-ts": "^0.1.1"
+    "tree-sitter-ts": "^0.1.2"
   },
   "devDependencies": {
     "@swc/core": "^1.13.5",
@@ -51,7 +51,7 @@
     "@types/node": "^25.3.0",
     "http-server": "^14.1.1",
     "jest": "^29.7.0",
-    "tree-sitter-ts": "^0.1.1",
+    "tree-sitter-ts": "^0.1.2",
     "tsup": "^8.0.0",
     "tsx": "^4.21.0",
     "typescript": "^5.4.0"
@@ -69,6 +69,10 @@
     "code-highlighting",
     "highlighter"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hieutran512/tree-sitter-ts-highlight"
+  },
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"

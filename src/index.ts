@@ -198,6 +198,7 @@ export type {
   HtmlTheme,
   AnsiTheme,
 } from "./types.js";
+export type * from "tree-sitter-ts";
 
 // Themes
 export { defaultLightTheme } from "./themes/default-light.js";

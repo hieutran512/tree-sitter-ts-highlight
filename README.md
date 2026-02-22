@@ -226,6 +226,14 @@ const diffHtml = highlightDiff(oldCode, newCode, "typescript", {
 - `escapeHtml`
 - `enhanceTokenSemantics`
 
+### Re-exported `tree-sitter-ts` types
+
+All exported types from `tree-sitter-ts` are re-exported from this package, so TypeScript users can import both highlighting APIs and tokenizer types from one module.
+
+```ts
+import type { Token, Range, TokenCategory } from "tree-sitter-ts-highlight";
+```
+
 ## Language support
 
 Language parsing/tokenization comes from `tree-sitter-ts`. Pass either language names (for example `"typescript"`, `"python"`) or extensions like `".ts"`.
