@@ -2,7 +2,7 @@ import { defineConfig } from "tsup";
 
 export default defineConfig({
     entry: {
-        demo: "demos/browser-entry.ts",
+        demo: "docs/browser-entry.ts",
     },
     format: ["iife"],
     globalName: "TreeSitterTSHighlightDemo",
