@@ -1,14 +1,16 @@
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getThemeNames } from "../src/index.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const demoBundlePath = join(__dirname, "..", "dist", "demo.iife.js");
+const demoBundle = readFileSync(demoBundlePath, "utf-8").replaceAll("</script>", "<\\/script>");
 
 const languageSamples: Record<string, { label: string; code: string }> = {
-    typescript: {
-        label: "TypeScript",
-        code: `import { readFile } from "node:fs/promises";
+  typescript: {
+    label: "TypeScript",
+    code: `import { readFile } from "node:fs/promises";
 
 interface Config {
   port: number;
@@ -28,10 +30,10 @@ export class Server {
 export function createServer(port = 3000): Server {
   return new Server({ port, host: "localhost", debug: true });
 }`,
-    },
-    javascript: {
-        label: "JavaScript",
-        code: `const users = [
+  },
+  javascript: {
+    label: "JavaScript",
+    code: `const users = [
   { name: "Ada", age: 31 },
   { name: "Lin", age: 17 },
 ];
@@ -41,10 +43,10 @@ function getAdults(list) {
 }
 
 console.log(getAdults(users));`,
-    },
-    python: {
-        label: "Python",
-        code: `from dataclasses import dataclass
+  },
+  python: {
+    label: "Python",
+    code: `from dataclasses import dataclass
 
 @dataclass
 class User:
@@ -56,10 +58,10 @@ def greet(user: User) -> str:
     if user.active:
         return f"Hello, {user.name}!"
     return "Inactive user"`,
-    },
-    go: {
-        label: "Go",
-        code: `package main
+  },
+  go: {
+    label: "Go",
+    code: `package main
 
 import "fmt"
 
@@ -72,10 +74,10 @@ func main() {
     user := User{Name: "Go", Age: 16}
     fmt.Println(user)
 }`,
-    },
-    rust: {
-        label: "Rust",
-        code: `struct User {
+  },
+  rust: {
+    label: "Rust",
+    code: `struct User {
     name: String,
     age: u32,
 }
@@ -84,10 +86,10 @@ fn main() {
     let user = User { name: String::from("Rust"), age: 8 };
     println!("{} {}", user.name, user.age);
 }`,
-    },
-    java: {
-        label: "Java",
-        code: `public class Main {
+  },
+  java: {
+    label: "Java",
+    code: `public class Main {
   static class User {
     String name;
     int age;
@@ -103,19 +105,19 @@ fn main() {
     System.out.println(user.name + " " + user.age);
   }
 }`,
-    },
-    csharp: {
-        label: "C#",
-        code: `using System;
+  },
+  csharp: {
+    label: "C#",
+    code: `using System;
 
 record User(string Name, int Age);
 
 var user = new User("CSharp", 20);
 Console.WriteLine($"{user.Name} {user.Age}");`,
-    },
-    cpp: {
-        label: "C++",
-        code: `#include <iostream>
+  },
+  cpp: {
+    label: "C++",
+    code: `#include <iostream>
 
 class User {
 public:
@@ -129,10 +131,10 @@ int main() {
   User user("CPP", 40);
   std::cout << user.name << " " << user.age << std::endl;
 }`,
-    },
-    ruby: {
-        label: "Ruby",
-        code: `class User
+  },
+  ruby: {
+    label: "Ruby",
+    code: `class User
   attr_reader :name, :age
 
   def initialize(name, age)
@@ -143,10 +145,10 @@ end
 
 user = User.new("Ruby", 28)
 puts "#{user.name} #{user.age}"`,
-    },
-    php: {
-        label: "PHP",
-        code: `<?php
+  },
+  php: {
+    label: "PHP",
+    code: `<?php
 class User {
   public function __construct(
     public string $name,
@@ -156,29 +158,29 @@ class User {
 
 $user = new User("PHP", 23);
 echo $user->name . " " . $user->age;`,
-    },
-    kotlin: {
-        label: "Kotlin",
-        code: `data class User(val name: String, val age: Int)
+  },
+  kotlin: {
+    label: "Kotlin",
+    code: `data class User(val name: String, val age: Int)
 
 fun main() {
     val user = User("Kotlin", 12)
     println("\${user.name} \${user.age}")
 }`,
-    },
-    swift: {
-        label: "Swift",
-        code: `struct User {
+  },
+  swift: {
+    label: "Swift",
+    code: `struct User {
     let name: String
     let age: Int
 }
 
 let user = User(name: "Swift", age: 11)
 print("\(user.name) \(user.age)")`,
-    },
-    css: {
-        label: "CSS",
-        code: `:root {
+  },
+  css: {
+    label: "CSS",
+    code: `:root {
   --accent: #7aa2f7;
 }
 
@@ -186,68 +188,68 @@ print("\(user.name) \(user.age)")`,
   color: var(--accent);
   border: 1px solid #2a2a3a;
 }`,
-    },
-    html: {
-        label: "HTML",
-        code: `<section class="card">
+  },
+  html: {
+    label: "HTML",
+    code: `<section class="card">
   <h1>Demo</h1>
   <p data-id="42">Hello</p>
 </section>`,
-    },
-    json: {
-        label: "JSON",
-        code: `{
+  },
+  json: {
+    label: "JSON",
+    code: `{
   "name": "json-demo",
   "enabled": true,
   "ports": [3000, 3001],
   "meta": { "owner": "team" }
 }`,
-    },
-    yaml: {
-        label: "YAML",
-        code: `name: yaml-demo
+  },
+  yaml: {
+    label: "YAML",
+    code: `name: yaml-demo
 enabled: true
 ports:
   - 3000
   - 3001
 meta:
   owner: team`,
-    },
-    sql: {
-        label: "SQL",
-        code: `SELECT id, name
+  },
+  sql: {
+    label: "SQL",
+    code: `SELECT id, name
 FROM users
 WHERE active = true
 ORDER BY created_at DESC
 LIMIT 10;`,
-    },
-    shell: {
-        label: "Shell",
-        code: `#!/usr/bin/env bash
+  },
+  shell: {
+    label: "Shell",
+    code: `#!/usr/bin/env bash
 set -euo pipefail
 
 name="demo"
 echo "running $name"`,
-    },
-    markdown: {
-        label: "Markdown",
-        code: `# Demo
+  },
+  markdown: {
+    label: "Markdown",
+    code: `# Demo
 
 - **Bold** item
 - Inline code: \`npm run build\`
 
 > Quote`,
-    },
-    xml: {
-        label: "XML",
-        code: `<users>
+  },
+  xml: {
+    label: "XML",
+    code: `<users>
   <user id="1" active="true">Alice</user>
   <user id="2" active="false">Bob</user>
 </users>`,
-    },
-    toml: {
-        label: "TOML",
-        code: `# TOML demo config
+  },
+  toml: {
+    label: "TOML",
+    code: `# TOML demo config
 title = "tree-sitter-ts-highlight"
 enabled = true
 timeout = 30
@@ -262,7 +264,7 @@ connection_max = 5000
 [owner]
 name = "Tom Preston-Werner"
 dob = 1979-05-27T07:32:00Z`,
-    },
+  },
 };
 
 const themeNames = getThemeNames();
@@ -281,46 +283,46 @@ pipeline deploy {
 }`;
 
 const dslProfile = {
-    name: "pipeline-dsl",
-    displayName: "Pipeline DSL",
-    version: "1.0.0",
-    fileExtensions: [".pipe"],
-    lexer: {
-        charClasses: {
-            identStart: { union: [{ predefined: "letter" }, { chars: "_" }] },
-            identPart: { union: [{ predefined: "alphanumeric" }, { chars: "_-" }] },
-        },
-        tokenTypes: {
-            keyword: { category: "keyword" },
-            identifier: { category: "identifier" },
-            string: { category: "string" },
-            number: { category: "number" },
-            comment: { category: "comment" },
-            operator: { category: "operator" },
-            punctuation: { category: "punctuation" },
-            type: { category: "type" },
-            whitespace: { category: "whitespace" },
-            newline: { category: "newline" },
-        },
-        initialState: "default",
-        skipTokens: ["whitespace", "newline"],
-        states: {
-            default: {
-                rules: [
-                    { match: { kind: "keywords", words: ["pipeline", "stage", "step", "when", "env"] }, token: "keyword" },
-                    { match: { kind: "keywords", words: ["String", "Number", "Boolean", "File"] }, token: "type" },
-                    { match: { kind: "line", start: "#" }, token: "comment" },
-                    { match: { kind: "delimited", open: '"', close: '"', escape: "\\" }, token: "string" },
-                    { match: { kind: "number", integer: true, float: true }, token: "number" },
-                    { match: { kind: "string", value: ["->", "=>", "|", "="] }, token: "operator" },
-                    { match: { kind: "string", value: ["{", "}", "(", ")", "[", "]", ",", ":", ";", "."] }, token: "punctuation" },
-                    { match: { kind: "charSequence", first: { ref: "identStart" }, rest: { ref: "identPart" } }, token: "identifier" },
-                    { match: { kind: "charSequence", first: { predefined: "whitespace" }, rest: { predefined: "whitespace" } }, token: "whitespace" },
-                    { match: { kind: "string", value: "\n" }, token: "newline" },
-                ],
-            },
-        },
+  name: "pipeline-dsl",
+  displayName: "Pipeline DSL",
+  version: "1.0.0",
+  fileExtensions: [".pipe"],
+  lexer: {
+    charClasses: {
+      identStart: { union: [{ predefined: "letter" }, { chars: "_" }] },
+      identPart: { union: [{ predefined: "alphanumeric" }, { chars: "_-" }] },
     },
+    tokenTypes: {
+      keyword: { category: "keyword" },
+      identifier: { category: "identifier" },
+      string: { category: "string" },
+      number: { category: "number" },
+      comment: { category: "comment" },
+      operator: { category: "operator" },
+      punctuation: { category: "punctuation" },
+      type: { category: "type" },
+      whitespace: { category: "whitespace" },
+      newline: { category: "newline" },
+    },
+    initialState: "default",
+    skipTokens: ["whitespace", "newline"],
+    states: {
+      default: {
+        rules: [
+          { match: { kind: "keywords", words: ["pipeline", "stage", "step", "when", "env"] }, token: "keyword" },
+          { match: { kind: "keywords", words: ["String", "Number", "Boolean", "File"] }, token: "type" },
+          { match: { kind: "line", start: "#" }, token: "comment" },
+          { match: { kind: "delimited", open: '"', close: '"', escape: "\\" }, token: "string" },
+          { match: { kind: "number", integer: true, float: true }, token: "number" },
+          { match: { kind: "string", value: ["->", "=>", "|", "="] }, token: "operator" },
+          { match: { kind: "string", value: ["{", "}", "(", ")", "[", "]", ",", ":", ";", "."] }, token: "punctuation" },
+          { match: { kind: "charSequence", first: { ref: "identStart" }, rest: { ref: "identPart" } }, token: "identifier" },
+          { match: { kind: "charSequence", first: { predefined: "whitespace" }, rest: { predefined: "whitespace" } }, token: "whitespace" },
+          { match: { kind: "string", value: "\n" }, token: "newline" },
+        ],
+      },
+    },
+  },
 };
 
 const html = `<!DOCTYPE html>
@@ -404,12 +406,15 @@ const html = `<!DOCTYPE html>
     .symbols-table th { color: #7aa2f7; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
     .small { font-size: 0.8rem; color: #7f8694; }
   </style>
-  <script type="importmap">
-  {
-    "imports": {
-      "tree-sitter-ts": "https://esm.sh/tree-sitter-ts@0.1.0"
-    }
-  }
+  <script>
+window.__TS_DEMO_BUNDLE_OK__ = false;
+window.__TS_DEMO_BUNDLE_ERROR__ = null;
+try {
+${demoBundle}
+window.__TS_DEMO_BUNDLE_OK__ = true;
+} catch (error) {
+window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : error);
+}
   </script>
 </head>
 <body>
@@ -438,7 +443,7 @@ const html = `<!DOCTYPE html>
         <label class="check"><input id="customInput" type="checkbox" /> Use custom input</label>
         <button id="dslBtn" type="button">Register custom DSL profile</button>
       </div>
-      <p class="small" style="margin-top:10px">Tip: run <strong>npm run build</strong> before opening this file, so browser can import <strong>dist/index.js</strong>.</p>
+      <p class="small" style="margin-top:10px">Tip: run <strong>npm run build</strong> then <strong>npm run demo:generate</strong> to refresh this self-contained offline demo.</p>
     </div>
 
     <div class="panel">
@@ -484,9 +489,32 @@ const html = `<!DOCTYPE html>
     </div>
   </div>
 
-  <script type="module">
-    import { builtinThemes, highlight } from "../dist/index.js";
-    import { extractSymbols, registerProfile } from "tree-sitter-ts";
+  <script>
+    function normalizeDemoApi(candidate) {
+      if (!candidate || typeof candidate !== "object") return undefined;
+      if (typeof candidate.highlight === "function" && Array.isArray(candidate.builtinThemes)) {
+        return candidate;
+      }
+      if ("demoApi" in candidate) {
+        const unwrapped = candidate.demoApi;
+        if (unwrapped && typeof unwrapped === "object" && typeof unwrapped.highlight === "function") {
+          return unwrapped;
+        }
+      }
+      return undefined;
+    }
+
+    const fromGlobalThisRaw = typeof globalThis !== "undefined" ? globalThis.TreeSitterTSHighlightDemo : undefined;
+    const fromWindowRaw = typeof window !== "undefined" ? window.TreeSitterTSHighlightDemo : undefined;
+    const fromVarRaw = typeof TreeSitterTSHighlightDemo !== "undefined" ? TreeSitterTSHighlightDemo : undefined;
+    const demoApi = normalizeDemoApi(fromGlobalThisRaw) || normalizeDemoApi(fromWindowRaw) || normalizeDemoApi(fromVarRaw);
+    if (!demoApi) {
+      const bundleOk = typeof window !== "undefined" ? window.__TS_DEMO_BUNDLE_OK__ : undefined;
+      const bundleError = typeof window !== "undefined" ? window.__TS_DEMO_BUNDLE_ERROR__ : undefined;
+      throw new Error("Missing embedded demo bundle. Run npm run build && npm run demo:generate. bundleOk=" + String(bundleOk) + " bundleError=" + String(bundleError));
+    }
+
+    const { builtinThemes, highlight, extractSymbols, registerProfile } = demoApi;
 
     const samples = ${JSON.stringify(languageSamples)};
     const defaultThemeNames = ${JSON.stringify(themeNames)};
@@ -526,17 +554,17 @@ const html = `<!DOCTYPE html>
     function getSelectedCode() {
       const lang = languageSelect.value;
       if (customInput.checked) return sourceArea.value;
-      return samples[lang]?.code ?? "";
+      return samples[lang] ? samples[lang].code : "";
     }
 
     function setSourceFromLanguage() {
       if (!customInput.checked) {
-        sourceArea.value = samples[languageSelect.value]?.code ?? "";
+        sourceArea.value = samples[languageSelect.value] ? samples[languageSelect.value].code : "";
       }
     }
 
     function renderCode(html, theme) {
-      return '<pre class="hlts" style="background:' + (theme.background ?? "#0f0f14") + ';color:' + (theme.foreground ?? "#e6e6e6") + '"><code>' + html + '</code></pre>';
+      return '<pre class="hlts" style="background:' + (theme.background != null ? theme.background : "#0f0f14") + ';color:' + (theme.foreground != null ? theme.foreground : "#e6e6e6") + '"><code>' + html + '</code></pre>';
     }
 
     function renderSymbols(source, language) {
@@ -561,7 +589,7 @@ const html = `<!DOCTYPE html>
     function renderAll() {
       const language = languageSelect.value;
       const source = getSelectedCode();
-      const theme = themeMap.get(themeSelect.value) ?? builtinThemes[0];
+      const theme = themeMap.get(themeSelect.value) || builtinThemes[0];
       const withLineNumbers = lineNumbersInput.checked;
 
       try {
