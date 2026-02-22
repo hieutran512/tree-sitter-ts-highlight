@@ -5,28 +5,87 @@
   color: #657b83;
 }
 
-.hlts-solarized-light .hlts-keyword    { color: #859900; font-weight: bold; }
-.hlts-solarized-light .hlts-identifier { color: #657b83; }
-.hlts-solarized-light .hlts-string     { color: #2aa198; }
-.hlts-solarized-light .hlts-number     { color: #d33682; }
-.hlts-solarized-light .hlts-comment    { color: #93a1a1; font-style: italic; }
-.hlts-solarized-light .hlts-operator   { color: #657b83; }
-.hlts-solarized-light .hlts-punctuation { color: #657b83; }
-.hlts-solarized-light .hlts-type       { color: #b58900; }
-.hlts-solarized-light .hlts-decorator  { color: #6c71c4; }
-.hlts-solarized-light .hlts-tag        { color: #268bd2; }
-.hlts-solarized-light .hlts-attribute  { color: #b58900; }
-.hlts-solarized-light .hlts-meta       { color: #93a1a1; }
-.hlts-solarized-light .hlts-regexp     { color: #dc322f; }
-.hlts-solarized-light .hlts-escape     { color: #cb4b16; font-weight: bold; }
-.hlts-solarized-light .hlts-variable   { color: #268bd2; }
-.hlts-solarized-light .hlts-constant   { color: #d33682; }
-.hlts-solarized-light .hlts-error      { color: #dc322f; text-decoration: wavy underline; }
-.hlts-solarized-light .hlts-plain      { color: #657b83; }
+.hlts-solarized-light .hlts-keyword {
+  color: #859900;
+  font-weight: bold;
+}
+
+.hlts-solarized-light .hlts-identifier {
+  color: #657b83;
+}
+
+.hlts-solarized-light .hlts-string {
+  color: #2aa198;
+}
+
+.hlts-solarized-light .hlts-number {
+  color: #d33682;
+}
+
+.hlts-solarized-light .hlts-comment {
+  color: #93a1a1;
+  font-style: italic;
+}
+
+.hlts-solarized-light .hlts-operator {
+  color: #657b83;
+}
+
+.hlts-solarized-light .hlts-punctuation {
+  color: #657b83;
+}
+
+.hlts-solarized-light .hlts-type {
+  color: #b58900;
+}
+
+.hlts-solarized-light .hlts-decorator {
+  color: #6c71c4;
+}
+
+.hlts-solarized-light .hlts-tag {
+  color: #268bd2;
+}
+
+.hlts-solarized-light .hlts-attribute {
+  color: #b58900;
+}
+
+.hlts-solarized-light .hlts-meta {
+  color: #93a1a1;
+}
+
+.hlts-solarized-light .hlts-regexp {
+  color: #dc322f;
+}
+
+.hlts-solarized-light .hlts-escape {
+  color: #cb4b16;
+  font-weight: bold;
+}
+
+.hlts-solarized-light .hlts-variable {
+  color: #268bd2;
+}
+
+.hlts-solarized-light .hlts-constant {
+  color: #d33682;
+}
+
+.hlts-solarized-light .hlts-error {
+  color: #dc322f;
+  text-decoration: wavy underline;
+}
+
+.hlts-solarized-light .hlts-plain {
+  color: #657b83;
+}
 
 .hlts-solarized-light .hlts-line-number {
   color: #93a1a1;
   border-right: 1px solid #eee8d5;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .hlts-solarized-light .hlts-table tr:hover {

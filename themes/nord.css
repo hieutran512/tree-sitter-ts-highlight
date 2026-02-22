@@ -5,28 +5,87 @@
   color: #d8dee9;
 }
 
-.hlts-nord .hlts-keyword    { color: #81a1c1; font-weight: bold; }
-.hlts-nord .hlts-identifier { color: #d8dee9; }
-.hlts-nord .hlts-string     { color: #a3be8c; }
-.hlts-nord .hlts-number     { color: #b48ead; }
-.hlts-nord .hlts-comment    { color: #616e88; font-style: italic; }
-.hlts-nord .hlts-operator   { color: #81a1c1; }
-.hlts-nord .hlts-punctuation { color: #eceff4; }
-.hlts-nord .hlts-type       { color: #8fbcbb; }
-.hlts-nord .hlts-decorator  { color: #d08770; }
-.hlts-nord .hlts-tag        { color: #81a1c1; }
-.hlts-nord .hlts-attribute  { color: #8fbcbb; }
-.hlts-nord .hlts-meta       { color: #616e88; }
-.hlts-nord .hlts-regexp     { color: #ebcb8b; }
-.hlts-nord .hlts-escape     { color: #d08770; font-weight: bold; }
-.hlts-nord .hlts-variable   { color: #d8dee9; }
-.hlts-nord .hlts-constant   { color: #b48ead; }
-.hlts-nord .hlts-error      { color: #bf616a; text-decoration: wavy underline; }
-.hlts-nord .hlts-plain      { color: #d8dee9; }
+.hlts-nord .hlts-keyword {
+  color: #81a1c1;
+  font-weight: bold;
+}
+
+.hlts-nord .hlts-identifier {
+  color: #d8dee9;
+}
+
+.hlts-nord .hlts-string {
+  color: #a3be8c;
+}
+
+.hlts-nord .hlts-number {
+  color: #b48ead;
+}
+
+.hlts-nord .hlts-comment {
+  color: #616e88;
+  font-style: italic;
+}
+
+.hlts-nord .hlts-operator {
+  color: #81a1c1;
+}
+
+.hlts-nord .hlts-punctuation {
+  color: #eceff4;
+}
+
+.hlts-nord .hlts-type {
+  color: #8fbcbb;
+}
+
+.hlts-nord .hlts-decorator {
+  color: #d08770;
+}
+
+.hlts-nord .hlts-tag {
+  color: #81a1c1;
+}
+
+.hlts-nord .hlts-attribute {
+  color: #8fbcbb;
+}
+
+.hlts-nord .hlts-meta {
+  color: #616e88;
+}
+
+.hlts-nord .hlts-regexp {
+  color: #ebcb8b;
+}
+
+.hlts-nord .hlts-escape {
+  color: #d08770;
+  font-weight: bold;
+}
+
+.hlts-nord .hlts-variable {
+  color: #d8dee9;
+}
+
+.hlts-nord .hlts-constant {
+  color: #b48ead;
+}
+
+.hlts-nord .hlts-error {
+  color: #bf616a;
+  text-decoration: wavy underline;
+}
+
+.hlts-nord .hlts-plain {
+  color: #d8dee9;
+}
 
 .hlts-nord .hlts-line-number {
   color: #4c566a;
   border-right: 1px solid #3b4252;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .hlts-nord .hlts-table tr:hover {

@@ -7,6 +7,46 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const demoBundlePath = join(__dirname, "..", "dist", "demo.iife.js");
 const demoBundle = readFileSync(demoBundlePath, "utf-8").replaceAll("</script>", "<\\/script>");
 
+function scopeThemeCss(themeName: string, css: string): string {
+  const themeClass = `hlts-${themeName}`;
+
+  if (css.includes(`.${themeClass} .hlts-`) || css.includes(`.hlts.${themeClass}`)) {
+    return css;
+  }
+
+  return css.replace(/(^|\n)\s*([.#][^{\n]+)\s*\{/g, (match, boundary: string, selectorGroup: string) => {
+    const selectors = selectorGroup
+      .split(",")
+      .map((selector) => selector.trim())
+      .filter(Boolean)
+      .map((selector) => {
+        if (selector.startsWith(`.${themeClass}`)) {
+          return selector;
+        }
+
+        if (/^\.hlts(?![-\w])/.test(selector)) {
+          return selector.replace(/^\.hlts(?![-\w])/, `.hlts.${themeClass}`);
+        }
+
+        return `.${themeClass} ${selector}`;
+      })
+      .join(", ");
+
+    if (!selectors) {
+      return match;
+    }
+
+    return `${boundary}${selectors} {`;
+  });
+}
+
+const embeddedThemeCss = getThemeNames()
+  .map((name) => {
+    const rawCss = readFileSync(join(__dirname, "..", "themes", `${name}.css`), "utf-8");
+    return scopeThemeCss(name, rawCss);
+  })
+  .join("\n\n");
+
 const languageSamples: Record<string, { label: string; code: string }> = {
   typescript: {
     label: "TypeScript",
@@ -405,6 +445,8 @@ const html = `<!DOCTYPE html>
     }
     .symbols-table th { color: #7aa2f7; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
     .small { font-size: 0.8rem; color: #7f8694; }
+
+${embeddedThemeCss}
   </style>
   <script>
 window.__TS_DEMO_BUNDLE_OK__ = false;
@@ -564,7 +606,8 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
     }
 
     function renderCode(html, theme) {
-      return '<pre class="hlts" style="background:' + (theme.background != null ? theme.background : "#0f0f14") + ';color:' + (theme.foreground != null ? theme.foreground : "#e6e6e6") + '"><code>' + html + '</code></pre>';
+      const themeClass = theme && theme.name ? ' hlts-' + theme.name : '';
+      return '<pre class="hlts' + themeClass + '"><code>' + html + '</code></pre>';
     }
 
     function renderSymbols(source, language) {
@@ -594,17 +637,14 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
 
       try {
         const selectedHtml = highlight(source, language, {
-          theme,
           lineNumbers: withLineNumbers,
           semanticHighlighting: semanticInput.checked,
         });
         const baseHtml = highlight(source, language, {
-          theme,
           lineNumbers: withLineNumbers,
           semanticHighlighting: false,
         });
         const semanticHtml = highlight(source, language, {
-          theme,
           lineNumbers: withLineNumbers,
           semanticHighlighting: true,
         });

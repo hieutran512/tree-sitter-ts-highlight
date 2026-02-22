@@ -13,24 +13,81 @@
 }
 
 /* Token categories */
-.hlts-keyword    { color: #a626a4; font-weight: bold; }
-.hlts-identifier { color: #383a42; }
-.hlts-string     { color: #50a14f; }
-.hlts-number     { color: #986801; }
-.hlts-comment    { color: #a0a1a7; font-style: italic; }
-.hlts-operator   { color: #383a42; }
-.hlts-punctuation { color: #383a42; }
-.hlts-type       { color: #c18401; }
-.hlts-decorator  { color: #a626a4; }
-.hlts-tag        { color: #e45649; }
-.hlts-attribute  { color: #986801; }
-.hlts-meta       { color: #a0a1a7; }
-.hlts-regexp     { color: #50a14f; }
-.hlts-escape     { color: #986801; font-weight: bold; }
-.hlts-variable   { color: #e45649; }
-.hlts-constant   { color: #986801; }
-.hlts-error      { color: #e45649; text-decoration: wavy underline; }
-.hlts-plain      { color: #383a42; }
+.hlts-keyword {
+  color: #a626a4;
+  font-weight: bold;
+}
+
+.hlts-identifier {
+  color: #383a42;
+}
+
+.hlts-string {
+  color: #50a14f;
+}
+
+.hlts-number {
+  color: #986801;
+}
+
+.hlts-comment {
+  color: #a0a1a7;
+  font-style: italic;
+}
+
+.hlts-operator {
+  color: #383a42;
+}
+
+.hlts-punctuation {
+  color: #383a42;
+}
+
+.hlts-type {
+  color: #c18401;
+}
+
+.hlts-decorator {
+  color: #a626a4;
+}
+
+.hlts-tag {
+  color: #e45649;
+}
+
+.hlts-attribute {
+  color: #986801;
+}
+
+.hlts-meta {
+  color: #a0a1a7;
+}
+
+.hlts-regexp {
+  color: #50a14f;
+}
+
+.hlts-escape {
+  color: #986801;
+  font-weight: bold;
+}
+
+.hlts-variable {
+  color: #e45649;
+}
+
+.hlts-constant {
+  color: #986801;
+}
+
+.hlts-error {
+  color: #e45649;
+  text-decoration: wavy underline;
+}
+
+.hlts-plain {
+  color: #383a42;
+}
 
 /* Line numbers (table layout) */
 .hlts-table {
@@ -46,7 +103,7 @@
   text-align: right;
   user-select: none;
   -webkit-user-select: none;
-  min-width: 2.5em;
+  width: 1%;
   vertical-align: top;
   white-space: nowrap;
 }
