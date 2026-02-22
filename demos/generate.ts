@@ -370,24 +370,86 @@ const html = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
   <title>tree-sitter-ts-highlight — Interactive Demo</title>
   <style>
     * { box-sizing: border-box; }
+    :root {
+      --bg: #f6f7fb;
+      --surface: #ffffff;
+      --text: #1c2430;
+      --muted: #607085;
+      --border: #d9e0ea;
+      --input-bg: #ffffff;
+      --primary: #3b82f6;
+      --primary-text: #ffffff;
+      --mono-bg: #f8fafc;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f0f14;
+        --surface: #141422;
+        --text: #e6e6e6;
+        --muted: #9aa0aa;
+        --border: #2a2a3a;
+        --input-bg: #0f1020;
+        --primary: #7aa2f7;
+        --primary-text: #101420;
+        --mono-bg: #0f1020;
+      }
+    }
     body {
       margin: 0;
       padding: 0 20px 80px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #0f0f14;
-      color: #e6e6e6;
+      background: var(--bg);
+      color: var(--text);
       line-height: 1.5;
     }
     .container { max-width: 1080px; margin: 0 auto; }
     h1 { margin: 40px 0 8px; font-size: 2rem; }
-    .subtitle { color: #9aa0aa; margin-bottom: 28px; }
+    .subtitle { color: var(--muted); margin-bottom: 16px; }
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 12px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .hero a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+    .hero a:hover { text-decoration: underline; }
+    .tab-nav {
+      display: flex;
+      gap: 8px;
+      margin: 0 0 16px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--text);
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: var(--primary-text);
+      border-color: var(--primary);
+    }
+    .view { display: none; }
+    .view.active { display: block; }
     .panel {
-      border: 1px solid #25253a;
+      border: 1px solid var(--border);
       border-radius: 10px;
-      background: #141422;
+      background: var(--surface);
       padding: 16px;
       margin-bottom: 16px;
     }
@@ -397,30 +459,30 @@ const html = `<!DOCTYPE html>
       gap: 12px;
       align-items: end;
     }
-    label { font-size: 0.82rem; color: #9aa0aa; display: block; margin-bottom: 6px; }
+    label { font-size: 0.82rem; color: var(--muted); display: block; margin-bottom: 6px; }
     select, textarea, button, input[type="checkbox"] {
       font: inherit;
     }
     select, textarea {
       width: 100%;
-      background: #0f1020;
-      border: 1px solid #2a2a3a;
-      color: #e6e6e6;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
       border-radius: 8px;
       padding: 10px;
     }
     textarea { min-height: 200px; resize: vertical; font-family: 'SF Mono', Menlo, monospace; font-size: 13px; }
     button {
-      background: #7aa2f7;
+      background: var(--primary);
       border: none;
-      color: #101420;
+      color: var(--primary-text);
       border-radius: 8px;
       padding: 10px 14px;
       font-weight: 600;
       cursor: pointer;
     }
     .row { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
-    .check { display: flex; align-items: center; gap: 8px; color: #c8c8d4; }
+    .check { display: flex; align-items: center; gap: 8px; color: var(--text); }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media (max-width: 860px) { .grid-2 { grid-template-columns: 1fr; } }
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
@@ -435,29 +497,29 @@ const html = `<!DOCTYPE html>
       font-family: 'SF Mono', Menlo, monospace;
     }
     h2 { margin: 0 0 10px; font-size: 1.15rem; }
-    .muted { color: #9aa0aa; font-size: 0.92rem; }
+    .muted { color: var(--muted); font-size: 0.92rem; }
     ul { margin: 8px 0 0 18px; }
     .symbols-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     .symbols-table th, .symbols-table td {
       text-align: left;
       padding: 8px 10px;
-      border-bottom: 1px solid #2a2a3a;
+      border-bottom: 1px solid var(--border);
       font-family: 'SF Mono', Menlo, monospace;
       font-size: 12px;
     }
-    .symbols-table th { color: #7aa2f7; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
-    .small { font-size: 0.8rem; color: #7f8694; }
+    .symbols-table th { color: var(--primary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .small { font-size: 0.8rem; color: var(--muted); }
     .diff-preview {
-      border: 1px solid #2a2a3a;
+      border: 1px solid var(--border);
       border-radius: 8px;
       overflow: auto;
     }
     .json-preview {
       margin: 0;
       padding: 12px;
-      border: 1px solid #2a2a3a;
+      border: 1px solid var(--border);
       border-radius: 8px;
-      background: #0f1020;
+      background: var(--mono-bg);
       font-family: 'SF Mono', Menlo, monospace;
       font-size: 12px;
       max-height: 280px;
@@ -480,8 +542,12 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
 </head>
 <body>
   <div class="container">
-    <h1>tree-sitter-ts-highlight</h1>
-    <p class="subtitle">Interactive playground: select language/theme, toggle semantic highlighting, compare source diffs, or paste your own code.</p>
+    <div class="hero">
+      <div>
+        <h1>tree-sitter-ts-highlight</h1>
+        <p class="subtitle">A product demo for parser-based syntax highlighting, semantic rendering, and diff visualization.</p>
+      </div>      
+    </div>
 
     <div class="panel">
       <div class="controls">
@@ -504,77 +570,90 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
         <label class="check"><input id="customInput" type="checkbox" /> Use custom input</label>
         <button id="dslBtn" type="button">Register custom DSL profile</button>
       </div>
-      <p class="small" style="margin-top:10px">Tip: run <strong>npm run build</strong> then <strong>npm run demo:generate</strong> to refresh this self-contained offline demo.</p>
+      <p class="small" style="margin-top:10px">Tip: run <strong>npm run build</strong> then <strong>npm run demo:generate</strong> to refresh this single-file demo for GitHub Pages/static hosting.</p>
     </div>
 
-    <div class="panel">
-      <label for="source">Source code</label>
-      <textarea id="source"></textarea>
-    </div>
+    <nav class="tab-nav" aria-label="Demo sections">
+      <button class="tab-btn active" type="button" data-view-target="playground">Highlight Playground</button>
+      <button class="tab-btn" type="button" data-view-target="diff">Diff Explorer</button>
+      <button class="tab-btn" type="button" data-view-target="why">Why This Library</button>
+    </nav>
 
-    <div class="panel">
-      <h2>Diff Demo</h2>
-      <p class="muted">Compare two source versions using <strong>side-by-side</strong> or <strong>inline</strong> mode, and inspect the wrapper-friendly <strong>diffModel()</strong> output.</p>
-      <div class="controls" style="margin-bottom:12px">
-        <div>
-          <label for="diffView">Diff view</label>
-          <select id="diffView">
-            <option value="side-by-side">Side by side</option>
-            <option value="inline">Inline</option>
-          </select>
-        </div>
+    <section class="view active" id="view-playground" data-view="playground">
+      <div class="panel">
+        <label for="source">Source code</label>
+        <textarea id="source"></textarea>
       </div>
-      <div class="grid-2" style="margin-bottom:12px">
-        <div>
-          <label for="diffOld">Original source</label>
-          <textarea id="diffOld"></textarea>
-        </div>
-        <div>
-          <label for="diffNew">Updated source</label>
-          <textarea id="diffNew"></textarea>
-        </div>
-      </div>
-      <div class="diff-preview" id="diffPreview"></div>
-      <h2 style="margin-top:16px">Diff Model (for wrappers)</h2>
-      <pre class="json-preview" id="diffModelPreview"></pre>
-    </div>
 
-    <div class="panel code-wrap">
-      <h2>Selected Output</h2>
-      <div id="preview"></div>
-    </div>
-
-    <div class="panel">
-      <h2>Why use this library?</h2>
-      <p class="muted">Compared with regex-based highlighters, this demo shows tree-sitter-ts benefits in practice:</p>
-      <ul>
-        <li>Semantic reclassification (same token stream, richer visual contrast for properties/types/variables).</li>
-        <li>Language profile extension at runtime (register custom DSL without plugin recompilation).</li>
-        <li>Code structure extraction via <strong>extractSymbols()</strong> for editor-like features.</li>
-      </ul>
-    </div>
-
-    <div class="grid-2">
       <div class="panel code-wrap">
-        <h2>Comparison: semantic OFF</h2>
-        <div id="previewOff"></div>
+        <h2>Live Highlight Output</h2>
+        <div id="preview"></div>
       </div>
-      <div class="panel code-wrap">
-        <h2>Comparison: semantic ON</h2>
-        <div id="previewOn"></div>
-      </div>
-    </div>
 
-    <div class="panel">
-      <h2>Extracted Symbols</h2>
-      <p class="muted">Live output from <strong>extractSymbols(source, language)</strong> for the current code.</p>
-      <table class="symbols-table">
-        <thead>
-          <tr><th>Kind</th><th>Name</th><th>Start</th><th>End</th></tr>
-        </thead>
-        <tbody id="symbolsBody"></tbody>
-      </table>
-    </div>
+      <div class="grid-2">
+        <div class="panel code-wrap">
+          <h2>Comparison: semantic OFF</h2>
+          <div id="previewOff"></div>
+        </div>
+        <div class="panel code-wrap">
+          <h2>Comparison: semantic ON</h2>
+          <div id="previewOn"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Extracted Symbols</h2>
+        <p class="muted">Live output from <strong>extractSymbols(source, language)</strong> for the current code.</p>
+        <table class="symbols-table">
+          <thead>
+            <tr><th>Kind</th><th>Name</th><th>Start</th><th>End</th></tr>
+          </thead>
+          <tbody id="symbolsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="view" id="view-diff" data-view="diff">
+      <div class="panel">
+        <h2>Diff Explorer</h2>
+        <p class="muted">Compare two source versions using <strong>side-by-side</strong> or <strong>inline</strong> mode, and inspect the wrapper-friendly <strong>diffModel()</strong> output.</p>
+        <div class="controls" style="margin-bottom:12px">
+          <div>
+            <label for="diffView">Diff view</label>
+            <select id="diffView">
+              <option value="side-by-side">Side by side</option>
+              <option value="inline">Inline</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid-2" style="margin-bottom:12px">
+          <div>
+            <label for="diffOld">Original source</label>
+            <textarea id="diffOld"></textarea>
+          </div>
+          <div>
+            <label for="diffNew">Updated source</label>
+            <textarea id="diffNew"></textarea>
+          </div>
+        </div>
+        <div class="diff-preview" id="diffPreview"></div>
+        <h2 style="margin-top:16px">Diff Model (for wrappers)</h2>
+        <pre class="json-preview" id="diffModelPreview"></pre>
+      </div>
+    </section>
+
+    <section class="view" id="view-why" data-view="why">
+      <div class="panel">
+        <h2>Why use this library?</h2>
+        <p class="muted">Compared with regex-based highlighters, this demo shows tree-sitter-ts benefits in practice:</p>
+        <ul>
+          <li>Semantic reclassification (same token stream, richer visual contrast for properties/types/variables).</li>
+          <li>Language profile extension at runtime (register custom DSL without plugin recompilation).</li>
+          <li>Code structure extraction via <strong>extractSymbols()</strong> for editor-like features.</li>
+          <li>First-class HTML diff output plus <strong>diffModel()</strong> for custom wrappers.</li>          
+        </ul>
+      </div>
+    </section>
   </div>
 
   <script>
@@ -636,8 +715,19 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
     const symbolsBody = document.getElementById("symbolsBody");
     const diffPreview = document.getElementById("diffPreview");
     const diffModelPreview = document.getElementById("diffModelPreview");
+    const tabButtons = Array.from(document.querySelectorAll("[data-view-target]"));
+    const viewSections = Array.from(document.querySelectorAll("[data-view]"));
 
     const themeMap = new Map(builtinThemes.map((theme) => [theme.name, theme]));
+    const autoThemeByScheme = {
+      light: "github-light",
+      dark: "github-dark",
+    };
+    const colorSchemeMedia =
+      typeof window !== "undefined" && typeof window.matchMedia === "function"
+        ? window.matchMedia("(prefers-color-scheme: dark)")
+        : null;
+    let themeChangedManually = false;
 
     const dslCode = ${JSON.stringify(dslCode)};
     const dslProfile = ${JSON.stringify(dslProfile)};
@@ -667,6 +757,44 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
       themeSelect.innerHTML = defaultThemeNames
         .map((name) => '<option value="' + name + '">' + name + '</option>')
         .join("");
+    }
+
+    function getPreferredThemeName() {
+      const isDark = colorSchemeMedia ? colorSchemeMedia.matches : false;
+      const preferred = isDark ? autoThemeByScheme.dark : autoThemeByScheme.light;
+      return defaultThemeNames.includes(preferred) ? preferred : defaultThemeNames[0];
+    }
+
+    function syncCodeThemeWithPage(force) {
+      if (!force && themeChangedManually) {
+        return;
+      }
+      themeSelect.value = getPreferredThemeName();
+    }
+
+    function currentViewFromHash() {
+      const hash = (window.location.hash || "").replace(/^#/, "");
+      if (hash === "diff" || hash === "why" || hash === "playground") {
+        return hash;
+      }
+      return "playground";
+    }
+
+    function setActiveView(viewName, updateHash) {
+      viewSections.forEach((section) => {
+        const isActive = section.getAttribute("data-view") === viewName;
+        section.classList.toggle("active", isActive);
+      });
+
+      tabButtons.forEach((button) => {
+        const isActive = button.getAttribute("data-view-target") === viewName;
+        button.classList.toggle("active", isActive);
+        button.setAttribute("aria-current", isActive ? "page" : "false");
+      });
+
+      if (updateHash && window.location.hash !== "#" + viewName) {
+        window.location.hash = viewName;
+      }
     }
 
     function getSelectedCode() {
@@ -805,7 +933,10 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
       setDiffFromLanguage();
       renderAll();
     });
-    themeSelect.addEventListener("change", renderAll);
+    themeSelect.addEventListener("change", () => {
+      themeChangedManually = true;
+      renderAll();
+    });
     semanticInput.addEventListener("change", renderAll);
     lineNumbersInput.addEventListener("change", renderAll);
     diffView.addEventListener("change", renderAll);
@@ -824,13 +955,41 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
       }
     });
 
+    tabButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const target = button.getAttribute("data-view-target");
+        if (target) {
+          setActiveView(target, true);
+        }
+      });
+    });
+
+    window.addEventListener("hashchange", () => {
+      setActiveView(currentViewFromHash(), false);
+    });
+
+    if (colorSchemeMedia) {
+      const onSchemeChange = () => {
+        if (!themeChangedManually) {
+          syncCodeThemeWithPage(false);
+          renderAll();
+        }
+      };
+      if (typeof colorSchemeMedia.addEventListener === "function") {
+        colorSchemeMedia.addEventListener("change", onSchemeChange);
+      } else if (typeof colorSchemeMedia.addListener === "function") {
+        colorSchemeMedia.addListener(onSchemeChange);
+      }
+    }
+
     fillLanguages();
     fillThemes();
+    syncCodeThemeWithPage(true);
     languageSelect.value = "typescript";
-    themeSelect.value = "github-dark";
     sourceArea.readOnly = true;
     setSourceFromLanguage();
     setDiffFromLanguage();
+    setActiveView(currentViewFromHash(), false);
     renderAll();
   </script>
 </body>
