@@ -56,6 +56,8 @@
     .check { display: flex; align-items: center; gap: 8px; color: #c8c8d4; }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media (max-width: 860px) { .grid-2 { grid-template-columns: 1fr; } }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    @media (max-width: 860px) { .grid-3 { grid-template-columns: 1fr; } }
     .code-wrap pre {
       margin: 0;
       border-radius: 8px;
@@ -78,6 +80,23 @@
     }
     .symbols-table th { color: #7aa2f7; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
     .small { font-size: 0.8rem; color: #7f8694; }
+    .diff-preview {
+      border: 1px solid #2a2a3a;
+      border-radius: 8px;
+      overflow: auto;
+    }
+    .json-preview {
+      margin: 0;
+      padding: 12px;
+      border: 1px solid #2a2a3a;
+      border-radius: 8px;
+      background: #0f1020;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 12px;
+      max-height: 280px;
+      overflow: auto;
+      white-space: pre;
+    }
 
 /* tree-sitter-ts-highlight - Default Light Theme (One Light-inspired) */
 .hlts.hlts-default-light {
@@ -184,6 +203,53 @@
 }
 .hlts-default-light .hlts-highlight-line {
   background: rgba(255, 255, 0, 0.1);
+}
+
+/* Diff views */
+.hlts-default-light .hlts-diff {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+}
+.hlts-default-light .hlts-diff-header .hlts-diff-label {
+  text-align: left;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+.hlts-default-light .hlts-diff-gutter {
+  color: #a0a1a7;
+  text-align: right;
+  user-select: none;
+  -webkit-user-select: none;
+  width: 1%;
+  padding: 0 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+.hlts-default-light .hlts-diff-content {
+  white-space: pre;
+  padding: 0 10px;
+  vertical-align: top;
+}
+.hlts-default-light .hlts-diff-row.hlts-diff-context {
+  background: transparent;
+}
+.hlts-default-light .hlts-diff-row.hlts-diff-added {
+  background: rgba(46, 160, 67, 0.12);
+}
+.hlts-default-light .hlts-diff-row.hlts-diff-removed {
+  background: rgba(207, 34, 46, 0.12);
+}
+.hlts-default-light .hlts-diff-row.hlts-diff-modified {
+  background: rgba(191, 135, 0, 0.12);
+}
+.hlts-default-light .hlts-diff-sign {
+  width: 24px;
+  text-align: center;
+  color: #6a737d;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* tree-sitter-ts-highlight - Default Dark Theme (One Dark-inspired) */
@@ -293,6 +359,53 @@
   background: rgba(255, 255, 0, 0.05);
 }
 
+/* Diff views */
+.hlts-default-dark .hlts-diff {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+}
+.hlts-default-dark .hlts-diff-header .hlts-diff-label {
+  text-align: left;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid #3b4048;
+}
+.hlts-default-dark .hlts-diff-gutter {
+  color: #636d83;
+  text-align: right;
+  user-select: none;
+  -webkit-user-select: none;
+  width: 1%;
+  padding: 0 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+.hlts-default-dark .hlts-diff-content {
+  white-space: pre;
+  padding: 0 10px;
+  vertical-align: top;
+}
+.hlts-default-dark .hlts-diff-row.hlts-diff-context {
+  background: transparent;
+}
+.hlts-default-dark .hlts-diff-row.hlts-diff-added {
+  background: rgba(46, 160, 67, 0.18);
+}
+.hlts-default-dark .hlts-diff-row.hlts-diff-removed {
+  background: rgba(248, 81, 73, 0.18);
+}
+.hlts-default-dark .hlts-diff-row.hlts-diff-modified {
+  background: rgba(210, 153, 34, 0.2);
+}
+.hlts-default-dark .hlts-diff-sign {
+  width: 24px;
+  text-align: center;
+  color: #9da5b4;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* tree-sitter-ts-highlight - GitHub Light Theme */
 
 .hlts.hlts-github-light {
@@ -387,6 +500,61 @@
   background: rgba(0, 0, 0, 0.03);
 }
 
+/* Diff views */
+.hlts-github-light .hlts-diff {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+}
+
+.hlts-github-light .hlts-diff-header .hlts-diff-label {
+  text-align: left;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid #d1d9e0;
+}
+
+.hlts-github-light .hlts-diff-gutter {
+  color: #8c959f;
+  text-align: right;
+  user-select: none;
+  -webkit-user-select: none;
+  width: 1%;
+  padding: 0 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.hlts-github-light .hlts-diff-content {
+  white-space: pre;
+  padding: 0 10px;
+  vertical-align: top;
+}
+
+.hlts-github-light .hlts-diff-row.hlts-diff-context {
+  background: transparent;
+}
+
+.hlts-github-light .hlts-diff-row.hlts-diff-added {
+  background: rgba(46, 160, 67, 0.14);
+}
+
+.hlts-github-light .hlts-diff-row.hlts-diff-removed {
+  background: rgba(207, 34, 46, 0.14);
+}
+
+.hlts-github-light .hlts-diff-row.hlts-diff-modified {
+  background: rgba(191, 135, 0, 0.14);
+}
+
+.hlts-github-light .hlts-diff-sign {
+  width: 24px;
+  text-align: center;
+  color: #57606a;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* tree-sitter-ts-highlight - GitHub Dark Theme */
 
 .hlts.hlts-github-dark {
@@ -479,6 +647,61 @@
 
 .hlts-github-dark .hlts-table tr:hover {
   background: rgba(255, 255, 255, 0.03);
+}
+
+/* Diff views */
+.hlts-github-dark .hlts-diff {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+}
+
+.hlts-github-dark .hlts-diff-header .hlts-diff-label {
+  text-align: left;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid #30363d;
+}
+
+.hlts-github-dark .hlts-diff-gutter {
+  color: #6e7681;
+  text-align: right;
+  user-select: none;
+  -webkit-user-select: none;
+  width: 1%;
+  padding: 0 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.hlts-github-dark .hlts-diff-content {
+  white-space: pre;
+  padding: 0 10px;
+  vertical-align: top;
+}
+
+.hlts-github-dark .hlts-diff-row.hlts-diff-context {
+  background: transparent;
+}
+
+.hlts-github-dark .hlts-diff-row.hlts-diff-added {
+  background: rgba(46, 160, 67, 0.2);
+}
+
+.hlts-github-dark .hlts-diff-row.hlts-diff-removed {
+  background: rgba(248, 81, 73, 0.2);
+}
+
+.hlts-github-dark .hlts-diff-row.hlts-diff-modified {
+  background: rgba(210, 153, 34, 0.22);
+}
+
+.hlts-github-dark .hlts-diff-sign {
+  width: 24px;
+  text-align: center;
+  color: #8b949e;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* tree-sitter-ts-highlight - Monokai Theme */
@@ -576,6 +799,61 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
+/* Diff views */
+.hlts-monokai .hlts-diff {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+}
+
+.hlts-monokai .hlts-diff-header .hlts-diff-label {
+  text-align: left;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid #3e3d32;
+}
+
+.hlts-monokai .hlts-diff-gutter {
+  color: #90908a;
+  text-align: right;
+  user-select: none;
+  -webkit-user-select: none;
+  width: 1%;
+  padding: 0 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.hlts-monokai .hlts-diff-content {
+  white-space: pre;
+  padding: 0 10px;
+  vertical-align: top;
+}
+
+.hlts-monokai .hlts-diff-row.hlts-diff-context {
+  background: transparent;
+}
+
+.hlts-monokai .hlts-diff-row.hlts-diff-added {
+  background: rgba(166, 226, 46, 0.18);
+}
+
+.hlts-monokai .hlts-diff-row.hlts-diff-removed {
+  background: rgba(249, 38, 114, 0.2);
+}
+
+.hlts-monokai .hlts-diff-row.hlts-diff-modified {
+  background: rgba(253, 151, 31, 0.2);
+}
+
+.hlts-monokai .hlts-diff-sign {
+  width: 24px;
+  text-align: center;
+  color: #ae81ff;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* tree-sitter-ts-highlight - Dracula Theme */
 
 .hlts.hlts-dracula {
@@ -669,6 +947,61 @@
 
 .hlts-dracula .hlts-table tr:hover {
   background: rgba(255, 255, 255, 0.03);
+}
+
+/* Diff views */
+.hlts-dracula .hlts-diff {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+}
+
+.hlts-dracula .hlts-diff-header .hlts-diff-label {
+  text-align: left;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid #44475a;
+}
+
+.hlts-dracula .hlts-diff-gutter {
+  color: #6272a4;
+  text-align: right;
+  user-select: none;
+  -webkit-user-select: none;
+  width: 1%;
+  padding: 0 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.hlts-dracula .hlts-diff-content {
+  white-space: pre;
+  padding: 0 10px;
+  vertical-align: top;
+}
+
+.hlts-dracula .hlts-diff-row.hlts-diff-context {
+  background: transparent;
+}
+
+.hlts-dracula .hlts-diff-row.hlts-diff-added {
+  background: rgba(80, 250, 123, 0.15);
+}
+
+.hlts-dracula .hlts-diff-row.hlts-diff-removed {
+  background: rgba(255, 85, 85, 0.18);
+}
+
+.hlts-dracula .hlts-diff-row.hlts-diff-modified {
+  background: rgba(255, 184, 108, 0.18);
+}
+
+.hlts-dracula .hlts-diff-sign {
+  width: 24px;
+  text-align: center;
+  color: #bd93f9;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* tree-sitter-ts-highlight - Nord Theme */
@@ -765,6 +1098,61 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
+/* Diff views */
+.hlts-nord .hlts-diff {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+}
+
+.hlts-nord .hlts-diff-header .hlts-diff-label {
+  text-align: left;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid #3b4252;
+}
+
+.hlts-nord .hlts-diff-gutter {
+  color: #4c566a;
+  text-align: right;
+  user-select: none;
+  -webkit-user-select: none;
+  width: 1%;
+  padding: 0 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.hlts-nord .hlts-diff-content {
+  white-space: pre;
+  padding: 0 10px;
+  vertical-align: top;
+}
+
+.hlts-nord .hlts-diff-row.hlts-diff-context {
+  background: transparent;
+}
+
+.hlts-nord .hlts-diff-row.hlts-diff-added {
+  background: rgba(163, 190, 140, 0.18);
+}
+
+.hlts-nord .hlts-diff-row.hlts-diff-removed {
+  background: rgba(191, 97, 106, 0.2);
+}
+
+.hlts-nord .hlts-diff-row.hlts-diff-modified {
+  background: rgba(235, 203, 139, 0.2);
+}
+
+.hlts-nord .hlts-diff-sign {
+  width: 24px;
+  text-align: center;
+  color: #81a1c1;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* tree-sitter-ts-highlight - Solarized Light Theme */
 
 .hlts.hlts-solarized-light {
@@ -857,6 +1245,61 @@
 
 .hlts-solarized-light .hlts-table tr:hover {
   background: rgba(0, 0, 0, 0.03);
+}
+
+/* Diff views */
+.hlts-solarized-light .hlts-diff {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+}
+
+.hlts-solarized-light .hlts-diff-header .hlts-diff-label {
+  text-align: left;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid #eee8d5;
+}
+
+.hlts-solarized-light .hlts-diff-gutter {
+  color: #93a1a1;
+  text-align: right;
+  user-select: none;
+  -webkit-user-select: none;
+  width: 1%;
+  padding: 0 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.hlts-solarized-light .hlts-diff-content {
+  white-space: pre;
+  padding: 0 10px;
+  vertical-align: top;
+}
+
+.hlts-solarized-light .hlts-diff-row.hlts-diff-context {
+  background: transparent;
+}
+
+.hlts-solarized-light .hlts-diff-row.hlts-diff-added {
+  background: rgba(133, 153, 0, 0.16);
+}
+
+.hlts-solarized-light .hlts-diff-row.hlts-diff-removed {
+  background: rgba(220, 50, 47, 0.16);
+}
+
+.hlts-solarized-light .hlts-diff-row.hlts-diff-modified {
+  background: rgba(181, 137, 0, 0.16);
+}
+
+.hlts-solarized-light .hlts-diff-sign {
+  width: 24px;
+  text-align: center;
+  color: #586e75;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* tree-sitter-ts-highlight - Solarized Dark Theme */
@@ -953,6 +1396,61 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
+/* Diff views */
+.hlts-solarized-dark .hlts-diff {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+}
+
+.hlts-solarized-dark .hlts-diff-header .hlts-diff-label {
+  text-align: left;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid #073642;
+}
+
+.hlts-solarized-dark .hlts-diff-gutter {
+  color: #586e75;
+  text-align: right;
+  user-select: none;
+  -webkit-user-select: none;
+  width: 1%;
+  padding: 0 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.hlts-solarized-dark .hlts-diff-content {
+  white-space: pre;
+  padding: 0 10px;
+  vertical-align: top;
+}
+
+.hlts-solarized-dark .hlts-diff-row.hlts-diff-context {
+  background: transparent;
+}
+
+.hlts-solarized-dark .hlts-diff-row.hlts-diff-added {
+  background: rgba(133, 153, 0, 0.2);
+}
+
+.hlts-solarized-dark .hlts-diff-row.hlts-diff-removed {
+  background: rgba(220, 50, 47, 0.2);
+}
+
+.hlts-solarized-dark .hlts-diff-row.hlts-diff-modified {
+  background: rgba(181, 137, 0, 0.22);
+}
+
+.hlts-solarized-dark .hlts-diff-sign {
+  width: 24px;
+  text-align: center;
+  color: #93a1a1;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* tree-sitter-ts-highlight - Tokyo Night Theme */
 
 .hlts.hlts-tokyo-night {
@@ -1047,6 +1545,61 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
+/* Diff views */
+.hlts-tokyo-night .hlts-diff {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+}
+
+.hlts-tokyo-night .hlts-diff-header .hlts-diff-label {
+  text-align: left;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid #292e42;
+}
+
+.hlts-tokyo-night .hlts-diff-gutter {
+  color: #3b4261;
+  text-align: right;
+  user-select: none;
+  -webkit-user-select: none;
+  width: 1%;
+  padding: 0 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.hlts-tokyo-night .hlts-diff-content {
+  white-space: pre;
+  padding: 0 10px;
+  vertical-align: top;
+}
+
+.hlts-tokyo-night .hlts-diff-row.hlts-diff-context {
+  background: transparent;
+}
+
+.hlts-tokyo-night .hlts-diff-row.hlts-diff-added {
+  background: rgba(158, 206, 106, 0.2);
+}
+
+.hlts-tokyo-night .hlts-diff-row.hlts-diff-removed {
+  background: rgba(247, 118, 142, 0.2);
+}
+
+.hlts-tokyo-night .hlts-diff-row.hlts-diff-modified {
+  background: rgba(255, 158, 100, 0.22);
+}
+
+.hlts-tokyo-night .hlts-diff-sign {
+  width: 24px;
+  text-align: center;
+  color: #7aa2f7;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* tree-sitter-ts-highlight - Catppuccin Mocha Theme */
 
 .hlts.hlts-catppuccin-mocha {
@@ -1139,6 +1692,61 @@
 
 .hlts-catppuccin-mocha .hlts-table tr:hover {
   background: rgba(255, 255, 255, 0.03);
+}
+
+/* Diff views */
+.hlts-catppuccin-mocha .hlts-diff {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+}
+
+.hlts-catppuccin-mocha .hlts-diff-header .hlts-diff-label {
+  text-align: left;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid #313244;
+}
+
+.hlts-catppuccin-mocha .hlts-diff-gutter {
+  color: #585b70;
+  text-align: right;
+  user-select: none;
+  -webkit-user-select: none;
+  width: 1%;
+  padding: 0 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.hlts-catppuccin-mocha .hlts-diff-content {
+  white-space: pre;
+  padding: 0 10px;
+  vertical-align: top;
+}
+
+.hlts-catppuccin-mocha .hlts-diff-row.hlts-diff-context {
+  background: transparent;
+}
+
+.hlts-catppuccin-mocha .hlts-diff-row.hlts-diff-added {
+  background: rgba(166, 227, 161, 0.2);
+}
+
+.hlts-catppuccin-mocha .hlts-diff-row.hlts-diff-removed {
+  background: rgba(243, 139, 168, 0.22);
+}
+
+.hlts-catppuccin-mocha .hlts-diff-row.hlts-diff-modified {
+  background: rgba(250, 179, 135, 0.22);
+}
+
+.hlts-catppuccin-mocha .hlts-diff-sign {
+  width: 24px;
+  text-align: center;
+  color: #89b4fa;
+  user-select: none;
+  -webkit-user-select: none;
 }
   </style>
   <script>
@@ -6845,6 +7453,99 @@ var TreeSitterTSHighlightDemo = (() => {
     return entries.map(([k, v]) => ` data-${k}="${escapeHtml(v)}"`).join("");
   }
 
+  // src/html/diff-renderer.ts
+  function renderDiffToHtml(diff, options = {}) {
+    var _a, _b;
+    const view = (_a = options.view) != null ? _a : "side-by-side";
+    const prefix = (_b = options.classPrefix) != null ? _b : "hlts-";
+    if (view === "inline") {
+      return renderInlineDiff(diff, options, prefix);
+    }
+    return renderSideBySideDiff(diff, options, prefix);
+  }
+  function renderSideBySideDiff(diff, options, prefix) {
+    var _a;
+    const { model } = diff;
+    const showHeader = (_a = options.showHeader) != null ? _a : true;
+    const rows = [];
+    if (showHeader) {
+      rows.push(
+        `<tr class="${prefix}diff-header"><th class="${prefix}diff-label" colspan="2">${escapeHtml(model.oldLabel)}</th><th class="${prefix}diff-label" colspan="2">${escapeHtml(model.newLabel)}</th></tr>`
+      );
+    }
+    for (const row of model.rows) {
+      const className = `${prefix}diff-row ${prefix}diff-${row.changeType}`;
+      const oldContent = renderLineContent(
+        row.oldLineNumber,
+        diff.oldLineTokens,
+        options,
+        row.oldText
+      );
+      const newContent = renderLineContent(
+        row.newLineNumber,
+        diff.newLineTokens,
+        options,
+        row.newText
+      );
+      rows.push(
+        `<tr class="${className}"><td class="${prefix}diff-gutter">${formatLineNumber(row.oldLineNumber)}</td><td class="${prefix}diff-content">${oldContent}</td><td class="${prefix}diff-gutter">${formatLineNumber(row.newLineNumber)}</td><td class="${prefix}diff-content">${newContent}</td></tr>`
+      );
+    }
+    return `<table class="${prefix}diff ${prefix}diff-side-by-side"><tbody>${rows.join("")}</tbody></table>`;
+  }
+  function renderInlineDiff(diff, options, prefix) {
+    const rows = [];
+    for (const row of diff.model.rows) {
+      if (row.changeType === "context") {
+        rows.push(
+          `<tr class="${prefix}diff-row ${prefix}diff-context"><td class="${prefix}diff-gutter">${formatLineNumber(row.newLineNumber)}</td><td class="${prefix}diff-sign"> </td><td class="${prefix}diff-content">${renderLineContent(
+            row.newLineNumber,
+            diff.newLineTokens,
+            options,
+            row.newText
+          )}</td></tr>`
+        );
+        continue;
+      }
+      if (row.oldLineNumber !== null) {
+        rows.push(
+          `<tr class="${prefix}diff-row ${prefix}diff-removed"><td class="${prefix}diff-gutter">${formatLineNumber(row.oldLineNumber)}</td><td class="${prefix}diff-sign">-</td><td class="${prefix}diff-content">${renderLineContent(
+            row.oldLineNumber,
+            diff.oldLineTokens,
+            options,
+            row.oldText
+          )}</td></tr>`
+        );
+      }
+      if (row.newLineNumber !== null) {
+        rows.push(
+          `<tr class="${prefix}diff-row ${prefix}diff-added"><td class="${prefix}diff-gutter">${formatLineNumber(row.newLineNumber)}</td><td class="${prefix}diff-sign">+</td><td class="${prefix}diff-content">${renderLineContent(
+            row.newLineNumber,
+            diff.newLineTokens,
+            options,
+            row.newText
+          )}</td></tr>`
+        );
+      }
+    }
+    return `<table class="${prefix}diff ${prefix}diff-inline"><tbody>${rows.join("")}</tbody></table>`;
+  }
+  function renderLineContent(lineNumber, tokenMap, options, fallbackText) {
+    if (lineNumber === null) return "";
+    const tokens = tokenMap.get(lineNumber);
+    if (!tokens || tokens.length === 0) {
+      return escapeHtml(fallbackText);
+    }
+    return renderTokensToHtml(tokens, {
+      classPrefix: options.classPrefix,
+      theme: options.theme,
+      decorations: options.decorations
+    });
+  }
+  function formatLineNumber(lineNumber) {
+    return lineNumber === null ? "" : String(lineNumber);
+  }
+
   // src/html/line-wrapper.ts
   function groupTokensByLine(tokens) {
     var _a;
@@ -7084,6 +7785,148 @@ var TreeSitterTSHighlightDemo = (() => {
       overrides.set(index, "variable");
       return;
     }
+  }
+
+  // src/diff/model.ts
+  function createDiffModel(oldSource, newSource, options = {}) {
+    var _a, _b;
+    const oldLines = splitLines(oldSource);
+    const newLines = splitLines(newSource);
+    const pairs = alignLinePairs(oldLines, newLines);
+    const rows = pairs.map((pair) => {
+      const { oldLineNumber, newLineNumber, oldText, newText } = pair;
+      let changeType = "context";
+      if (oldLineNumber === null) {
+        changeType = "added";
+      } else if (newLineNumber === null) {
+        changeType = "removed";
+      } else if (oldText !== newText) {
+        changeType = "modified";
+      }
+      return {
+        changeType,
+        oldLineNumber,
+        newLineNumber,
+        oldText,
+        newText
+      };
+    });
+    return {
+      oldLabel: (_a = options.oldLabel) != null ? _a : "Original",
+      newLabel: (_b = options.newLabel) != null ? _b : "Updated",
+      rows
+    };
+  }
+  function createDiffModelWithTokens(oldSource, newSource, language, options = {}) {
+    const model = createDiffModel(oldSource, newSource, options);
+    const oldLineTokens = tokenizeSourceByLine(oldSource, language, options);
+    const newLineTokens = tokenizeSourceByLine(newSource, language, options);
+    return {
+      model,
+      oldLineTokens,
+      newLineTokens
+    };
+  }
+  function tokenizeSourceByLine(source, language, options) {
+    const rawTokens = tokenize(source, language);
+    const tokens = options.semanticHighlighting ? enhanceTokenSemantics(rawTokens) : rawTokens;
+    const grouped = groupTokensByLine(tokens);
+    const map = /* @__PURE__ */ new Map();
+    for (const group of grouped) {
+      map.set(group.lineNumber, group.tokens);
+    }
+    return map;
+  }
+  function splitLines(source) {
+    const normalized = source.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    return normalized.split("\n");
+  }
+  function alignLinePairs(oldLines, newLines) {
+    const ops = buildLineOps(oldLines, newLines);
+    const rows = [];
+    let index = 0;
+    while (index < ops.length) {
+      const op = ops[index];
+      if (op.kind === "equal") {
+        rows.push({
+          oldLineNumber: op.oldIndex + 1,
+          newLineNumber: op.newIndex + 1,
+          oldText: oldLines[op.oldIndex],
+          newText: newLines[op.newIndex]
+        });
+        index++;
+        continue;
+      }
+      const deleted = [];
+      const added = [];
+      while (index < ops.length && ops[index].kind === "delete") {
+        deleted.push(ops[index].oldIndex);
+        index++;
+      }
+      while (index < ops.length && ops[index].kind === "add") {
+        added.push(ops[index].newIndex);
+        index++;
+      }
+      if (deleted.length === 0 && added.length === 0) {
+        continue;
+      }
+      const width = Math.max(deleted.length, added.length);
+      for (let i = 0; i < width; i++) {
+        const oldIndex = deleted[i];
+        const newIndex = added[i];
+        rows.push({
+          oldLineNumber: oldIndex === void 0 ? null : oldIndex + 1,
+          newLineNumber: newIndex === void 0 ? null : newIndex + 1,
+          oldText: oldIndex === void 0 ? "" : oldLines[oldIndex],
+          newText: newIndex === void 0 ? "" : newLines[newIndex]
+        });
+      }
+    }
+    return rows;
+  }
+  function buildLineOps(oldLines, newLines) {
+    const m = oldLines.length;
+    const n = newLines.length;
+    const dp = Array.from(
+      { length: m + 1 },
+      () => Array(n + 1).fill(0)
+    );
+    for (let i2 = m - 1; i2 >= 0; i2--) {
+      for (let j2 = n - 1; j2 >= 0; j2--) {
+        if (oldLines[i2] === newLines[j2]) {
+          dp[i2][j2] = dp[i2 + 1][j2 + 1] + 1;
+        } else {
+          dp[i2][j2] = Math.max(dp[i2 + 1][j2], dp[i2][j2 + 1]);
+        }
+      }
+    }
+    const ops = [];
+    let i = 0;
+    let j = 0;
+    while (i < m && j < n) {
+      if (oldLines[i] === newLines[j]) {
+        ops.push({ kind: "equal", oldIndex: i, newIndex: j });
+        i++;
+        j++;
+        continue;
+      }
+      if (dp[i + 1][j] >= dp[i][j + 1]) {
+        ops.push({ kind: "delete", oldIndex: i });
+        i++;
+      } else {
+        ops.push({ kind: "add", newIndex: j });
+        j++;
+      }
+    }
+    while (i < m) {
+      ops.push({ kind: "delete", oldIndex: i });
+      i++;
+    }
+    while (j < n) {
+      ops.push({ kind: "add", newIndex: j });
+      j++;
+    }
+    return ops;
   }
 
   // src/themes/default-light.ts
@@ -7425,6 +8268,13 @@ var TreeSitterTSHighlightDemo = (() => {
     const tokens = tokenize(source, language);
     return highlightTokens(tokens, options);
   }
+  function highlightDiff(oldSource, newSource, language, options = {}) {
+    const diff = createDiffModelWithTokens(oldSource, newSource, language, options);
+    return renderDiffToHtml(diff, options);
+  }
+  function diffModel(oldSource, newSource, options = {}) {
+    return createDiffModel(oldSource, newSource, options);
+  }
   function highlightTokens(tokens, options = {}) {
     const semanticTokens = options.semanticHighlighting ? enhanceTokenSemantics(tokens) : tokens;
     const renderOpts = {
@@ -7461,6 +8311,8 @@ var TreeSitterTSHighlightDemo = (() => {
   var demoApi = {
     builtinThemes,
     highlight,
+    highlightDiff,
+    diffModel,
     extractSymbols,
     registerProfile
   };
@@ -7480,7 +8332,7 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
 <body>
   <div class="container">
     <h1>tree-sitter-ts-highlight</h1>
-    <p class="subtitle">Interactive playground: select language/theme, toggle semantic highlighting, or paste your own code.</p>
+    <p class="subtitle">Interactive playground: select language/theme, toggle semantic highlighting, compare source diffs, or paste your own code.</p>
 
     <div class="panel">
       <div class="controls">
@@ -7509,6 +8361,33 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
     <div class="panel">
       <label for="source">Source code</label>
       <textarea id="source"></textarea>
+    </div>
+
+    <div class="panel">
+      <h2>Diff Demo</h2>
+      <p class="muted">Compare two source versions using <strong>side-by-side</strong> or <strong>inline</strong> mode, and inspect the wrapper-friendly <strong>diffModel()</strong> output.</p>
+      <div class="controls" style="margin-bottom:12px">
+        <div>
+          <label for="diffView">Diff view</label>
+          <select id="diffView">
+            <option value="side-by-side">Side by side</option>
+            <option value="inline">Inline</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-bottom:12px">
+        <div>
+          <label for="diffOld">Original source</label>
+          <textarea id="diffOld"></textarea>
+        </div>
+        <div>
+          <label for="diffNew">Updated source</label>
+          <textarea id="diffNew"></textarea>
+        </div>
+      </div>
+      <div class="diff-preview" id="diffPreview"></div>
+      <h2 style="margin-top:16px">Diff Model (for wrappers)</h2>
+      <pre class="json-preview" id="diffModelPreview"></pre>
     </div>
 
     <div class="panel code-wrap">
@@ -7552,12 +8431,23 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
   <script>
     function normalizeDemoApi(candidate) {
       if (!candidate || typeof candidate !== "object") return undefined;
-      if (typeof candidate.highlight === "function" && Array.isArray(candidate.builtinThemes)) {
+      if (
+        typeof candidate.highlight === "function" &&
+        typeof candidate.highlightDiff === "function" &&
+        typeof candidate.diffModel === "function" &&
+        Array.isArray(candidate.builtinThemes)
+      ) {
         return candidate;
       }
       if ("demoApi" in candidate) {
         const unwrapped = candidate.demoApi;
-        if (unwrapped && typeof unwrapped === "object" && typeof unwrapped.highlight === "function") {
+        if (
+          unwrapped &&
+          typeof unwrapped === "object" &&
+          typeof unwrapped.highlight === "function" &&
+          typeof unwrapped.highlightDiff === "function" &&
+          typeof unwrapped.diffModel === "function"
+        ) {
           return unwrapped;
         }
       }
@@ -7574,7 +8464,7 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
       throw new Error("Missing embedded demo bundle. Run npm run build && npm run demo:generate. bundleOk=" + String(bundleOk) + " bundleError=" + String(bundleError));
     }
 
-    const { builtinThemes, highlight, extractSymbols, registerProfile } = demoApi;
+    const { builtinThemes, highlight, highlightDiff, diffModel, extractSymbols, registerProfile } = demoApi;
 
     const samples = {"typescript":{"label":"TypeScript","code":"import { readFile } from \"node:fs/promises\";\n\ninterface Config {\n  port: number;\n  host: string;\n  debug?: boolean;\n}\n\nexport class Server {\n  constructor(private config: Config) {}\n\n  start(): void {\n    const { host, port } = this.config;\n    console.log(\"Server running at \" + host + \":\" + port);\n  }\n}\n\nexport function createServer(port = 3000): Server {\n  return new Server({ port, host: \"localhost\", debug: true });\n}"},"javascript":{"label":"JavaScript","code":"const users = [\n  { name: \"Ada\", age: 31 },\n  { name: \"Lin\", age: 17 },\n];\n\nfunction getAdults(list) {\n  return list.filter((item) => item.age >= 18).map((item) => item.name);\n}\n\nconsole.log(getAdults(users));"},"python":{"label":"Python","code":"from dataclasses import dataclass\n\n@dataclass\nclass User:\n    name: str\n    active: bool = True\n\n\ndef greet(user: User) -> str:\n    if user.active:\n        return f\"Hello, {user.name}!\"\n    return \"Inactive user\""},"go":{"label":"Go","code":"package main\n\nimport \"fmt\"\n\ntype User struct {\n    Name string\n    Age  int\n}\n\nfunc main() {\n    user := User{Name: \"Go\", Age: 16}\n    fmt.Println(user)\n}"},"rust":{"label":"Rust","code":"struct User {\n    name: String,\n    age: u32,\n}\n\nfn main() {\n    let user = User { name: String::from(\"Rust\"), age: 8 };\n    println!(\"{} {}\", user.name, user.age);\n}"},"java":{"label":"Java","code":"public class Main {\n  static class User {\n    String name;\n    int age;\n\n    User(String name, int age) {\n      this.name = name;\n      this.age = age;\n    }\n  }\n\n  public static void main(String[] args) {\n    User user = new User(\"Java\", 30);\n    System.out.println(user.name + \" \" + user.age);\n  }\n}"},"csharp":{"label":"C#","code":"using System;\n\nrecord User(string Name, int Age);\n\nvar user = new User(\"CSharp\", 20);\nConsole.WriteLine($\"{user.Name} {user.Age}\");"},"cpp":{"label":"C++","code":"#include <iostream>\n\nclass User {\npublic:\n  std::string name;\n  int age;\n\n  User(std::string n, int a) : name(n), age(a) {}\n};\n\nint main() {\n  User user(\"CPP\", 40);\n  std::cout << user.name << \" \" << user.age << std::endl;\n}"},"ruby":{"label":"Ruby","code":"class User\n  attr_reader :name, :age\n\n  def initialize(name, age)\n    @name = name\n    @age = age\n  end\nend\n\nuser = User.new(\"Ruby\", 28)\nputs \"#{user.name} #{user.age}\""},"php":{"label":"PHP","code":"<?php\nclass User {\n  public function __construct(\n    public string $name,\n    public int $age\n  ) {}\n}\n\n$user = new User(\"PHP\", 23);\necho $user->name . \" \" . $user->age;"},"kotlin":{"label":"Kotlin","code":"data class User(val name: String, val age: Int)\n\nfun main() {\n    val user = User(\"Kotlin\", 12)\n    println(\"${user.name} ${user.age}\")\n}"},"swift":{"label":"Swift","code":"struct User {\n    let name: String\n    let age: Int\n}\n\nlet user = User(name: \"Swift\", age: 11)\nprint(\"(user.name) (user.age)\")"},"css":{"label":"CSS","code":":root {\n  --accent: #7aa2f7;\n}\n\n.card {\n  color: var(--accent);\n  border: 1px solid #2a2a3a;\n}"},"html":{"label":"HTML","code":"<section class=\"card\">\n  <h1>Demo</h1>\n  <p data-id=\"42\">Hello</p>\n</section>"},"json":{"label":"JSON","code":"{\n  \"name\": \"json-demo\",\n  \"enabled\": true,\n  \"ports\": [3000, 3001],\n  \"meta\": { \"owner\": \"team\" }\n}"},"yaml":{"label":"YAML","code":"name: yaml-demo\nenabled: true\nports:\n  - 3000\n  - 3001\nmeta:\n  owner: team"},"sql":{"label":"SQL","code":"SELECT id, name\nFROM users\nWHERE active = true\nORDER BY created_at DESC\nLIMIT 10;"},"shell":{"label":"Shell","code":"#!/usr/bin/env bash\nset -euo pipefail\n\nname=\"demo\"\necho \"running $name\""},"markdown":{"label":"Markdown","code":"# Demo\n\n- **Bold** item\n- Inline code: `npm run build`\n\n> Quote"},"xml":{"label":"XML","code":"<users>\n  <user id=\"1\" active=\"true\">Alice</user>\n  <user id=\"2\" active=\"false\">Bob</user>\n</users>"},"toml":{"label":"TOML","code":"# TOML demo config\ntitle = \"tree-sitter-ts-highlight\"\nenabled = true\ntimeout = 30\npi = 3.14159\nhosts = [\"alpha\", \"beta\"]\n\n[database]\nserver = \"192.168.1.1\"\nports = [8001, 8001, 8002]\nconnection_max = 5000\n\n[owner]\nname = \"Tom Preston-Werner\"\ndob = 1979-05-27T07:32:00Z"}};
     const defaultThemeNames = ["default-light","default-dark","github-light","github-dark","monokai","dracula","nord","solarized-light","solarized-dark","tokyo-night","catppuccin-mocha"];
@@ -7587,16 +8477,35 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
     const lineNumbersInput = document.getElementById("lineNumbers");
     const customInput = document.getElementById("customInput");
     const dslBtn = document.getElementById("dslBtn");
+    const diffView = document.getElementById("diffView");
+    const diffOld = document.getElementById("diffOld");
+    const diffNew = document.getElementById("diffNew");
 
     const preview = document.getElementById("preview");
     const previewOff = document.getElementById("previewOff");
     const previewOn = document.getElementById("previewOn");
     const symbolsBody = document.getElementById("symbolsBody");
+    const diffPreview = document.getElementById("diffPreview");
+    const diffModelPreview = document.getElementById("diffModelPreview");
 
     const themeMap = new Map(builtinThemes.map((theme) => [theme.name, theme]));
 
     const dslCode = "# Pipeline DSL sample\npipeline deploy {\n  stage build {\n    step compile\n    step test\n  }\n\n  stage release {\n    when env.TARGET = \"prod\"\n    step publish\n  }\n}";
     const dslProfile = {"name":"pipeline-dsl","displayName":"Pipeline DSL","version":"1.0.0","fileExtensions":[".pipe"],"lexer":{"charClasses":{"identStart":{"union":[{"predefined":"letter"},{"chars":"_"}]},"identPart":{"union":[{"predefined":"alphanumeric"},{"chars":"_-"}]}},"tokenTypes":{"keyword":{"category":"keyword"},"identifier":{"category":"identifier"},"string":{"category":"string"},"number":{"category":"number"},"comment":{"category":"comment"},"operator":{"category":"operator"},"punctuation":{"category":"punctuation"},"type":{"category":"type"},"whitespace":{"category":"whitespace"},"newline":{"category":"newline"}},"initialState":"default","skipTokens":["whitespace","newline"],"states":{"default":{"rules":[{"match":{"kind":"keywords","words":["pipeline","stage","step","when","env"]},"token":"keyword"},{"match":{"kind":"keywords","words":["String","Number","Boolean","File"]},"token":"type"},{"match":{"kind":"line","start":"#"},"token":"comment"},{"match":{"kind":"delimited","open":"\"","close":"\"","escape":"\\"},"token":"string"},{"match":{"kind":"number","integer":true,"float":true},"token":"number"},{"match":{"kind":"string","value":["->","=>","|","="]},"token":"operator"},{"match":{"kind":"string","value":["{","}","(",")","[","]",",",":",";","."]},"token":"punctuation"},{"match":{"kind":"charSequence","first":{"ref":"identStart"},"rest":{"ref":"identPart"}},"token":"identifier"},{"match":{"kind":"charSequence","first":{"predefined":"whitespace"},"rest":{"predefined":"whitespace"}},"token":"whitespace"},{"match":{"kind":"string","value":"\n"},"token":"newline"}]}}}};
+    const diffSamples = {
+      typescript: {
+        oldSource: 'interface User {\n  id: number;\n  name: string;\n}\n\nexport function formatUser(user: User): string {\n  return user.name;\n}',
+        newSource: 'interface User {\n  id: number;\n  name: string;\n  email?: string;\n}\n\nexport function formatUser(user: User): string {\n  return user.name + " <" + (user.email ?? "n/a") + ">";\n}',
+      },
+      javascript: {
+        oldSource: 'function sum(items) {\n  return items.reduce((acc, item) => acc + item, 0);\n}',
+        newSource: 'export function sum(items) {\n  if (!Array.isArray(items)) return 0;\n  return items.reduce((acc, item) => acc + item, 0);\n}',
+      },
+      python: {
+        oldSource: 'def greet(name):\n    return "Hello " + name',
+        newSource: 'def greet(name: str) -> str:\n    if not name:\n        return "Hello"\n    return f"Hello {name}"',
+      },
+    };
 
     function fillLanguages() {
       const entries = Object.entries(samples);
@@ -7626,6 +8535,53 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
     function renderCode(html, theme) {
       const themeClass = theme && theme.name ? ' hlts-' + theme.name : '';
       return '<pre class="hlts' + themeClass + '"><code>' + html + '</code></pre>';
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function setDiffFromLanguage() {
+      const language = languageSelect.value;
+      const sample = diffSamples[language] || {
+        oldSource: (samples[language] ? samples[language].code : "").split("\n").slice(0, 12).join("\n"),
+        newSource: (samples[language] ? samples[language].code : "").split("\n").slice(0, 12).join("\n") + "\n",
+      };
+      diffOld.value = sample.oldSource;
+      diffNew.value = sample.newSource;
+    }
+
+    function renderDiff(language, theme) {
+      const oldSource = diffOld.value;
+      const newSource = diffNew.value;
+      try {
+        const html = highlightDiff(oldSource, newSource, language, {
+          view: diffView.value,
+          semanticHighlighting: semanticInput.checked,
+        });
+        const themeClass = theme && theme.name ? ' hlts-' + theme.name : '';
+        diffPreview.innerHTML = '<div class="hlts' + themeClass + '">' + html + '</div>';
+
+        const model = diffModel(oldSource, newSource, {
+          oldLabel: "Original",
+          newLabel: "Updated",
+        });
+        const compact = {
+          oldLabel: model.oldLabel,
+          newLabel: model.newLabel,
+          totalRows: model.rows.length,
+          rows: model.rows.slice(0, 12),
+        };
+        diffModelPreview.innerHTML = escapeHtml(JSON.stringify(compact, null, 2));
+      } catch (error) {
+        diffPreview.innerHTML = '<pre class="hlts" style="background:#2b1d24;color:#ffb4c1"><code>' + escapeHtml(String(error)) + '</code></pre>';
+        diffModelPreview.textContent = String(error);
+      }
     }
 
     function renderSymbols(source, language) {
@@ -7678,6 +8634,7 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
       }
 
       renderSymbols(source, language);
+      renderDiff(language, theme);
     }
 
     dslBtn.addEventListener("click", () => {
@@ -7688,6 +8645,7 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
         languageSelect.value = "pipeline-dsl";
         customInput.checked = false;
         setSourceFromLanguage();
+        setDiffFromLanguage();
         renderAll();
       }
     });
@@ -7695,11 +8653,15 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
     renderBtn.addEventListener("click", renderAll);
     languageSelect.addEventListener("change", () => {
       setSourceFromLanguage();
+      setDiffFromLanguage();
       renderAll();
     });
     themeSelect.addEventListener("change", renderAll);
     semanticInput.addEventListener("change", renderAll);
     lineNumbersInput.addEventListener("change", renderAll);
+    diffView.addEventListener("change", renderAll);
+    diffOld.addEventListener("input", renderAll);
+    diffNew.addEventListener("input", renderAll);
     customInput.addEventListener("change", () => {
       if (!customInput.checked) {
         setSourceFromLanguage();
@@ -7719,6 +8681,7 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
     themeSelect.value = "github-dark";
     sourceArea.readOnly = true;
     setSourceFromLanguage();
+    setDiffFromLanguage();
     renderAll();
   </script>
 </body>

@@ -91,3 +91,58 @@
 .hlts-github-dark .hlts-table tr:hover {
   background: rgba(255, 255, 255, 0.03);
 }
+
+/* Diff views */
+.hlts-github-dark .hlts-diff {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+}
+
+.hlts-github-dark .hlts-diff-header .hlts-diff-label {
+  text-align: left;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid #30363d;
+}
+
+.hlts-github-dark .hlts-diff-gutter {
+  color: #6e7681;
+  text-align: right;
+  user-select: none;
+  -webkit-user-select: none;
+  width: 1%;
+  padding: 0 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.hlts-github-dark .hlts-diff-content {
+  white-space: pre;
+  padding: 0 10px;
+  vertical-align: top;
+}
+
+.hlts-github-dark .hlts-diff-row.hlts-diff-context {
+  background: transparent;
+}
+
+.hlts-github-dark .hlts-diff-row.hlts-diff-added {
+  background: rgba(46, 160, 67, 0.2);
+}
+
+.hlts-github-dark .hlts-diff-row.hlts-diff-removed {
+  background: rgba(248, 81, 73, 0.2);
+}
+
+.hlts-github-dark .hlts-diff-row.hlts-diff-modified {
+  background: rgba(210, 153, 34, 0.22);
+}
+
+.hlts-github-dark .hlts-diff-sign {
+  width: 24px;
+  text-align: center;
+  color: #8b949e;
+  user-select: none;
+  -webkit-user-select: none;
+}

@@ -91,3 +91,58 @@
 .hlts-catppuccin-mocha .hlts-table tr:hover {
   background: rgba(255, 255, 255, 0.03);
 }
+
+/* Diff views */
+.hlts-catppuccin-mocha .hlts-diff {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+}
+
+.hlts-catppuccin-mocha .hlts-diff-header .hlts-diff-label {
+  text-align: left;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid #313244;
+}
+
+.hlts-catppuccin-mocha .hlts-diff-gutter {
+  color: #585b70;
+  text-align: right;
+  user-select: none;
+  -webkit-user-select: none;
+  width: 1%;
+  padding: 0 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.hlts-catppuccin-mocha .hlts-diff-content {
+  white-space: pre;
+  padding: 0 10px;
+  vertical-align: top;
+}
+
+.hlts-catppuccin-mocha .hlts-diff-row.hlts-diff-context {
+  background: transparent;
+}
+
+.hlts-catppuccin-mocha .hlts-diff-row.hlts-diff-added {
+  background: rgba(166, 227, 161, 0.2);
+}
+
+.hlts-catppuccin-mocha .hlts-diff-row.hlts-diff-removed {
+  background: rgba(243, 139, 168, 0.22);
+}
+
+.hlts-catppuccin-mocha .hlts-diff-row.hlts-diff-modified {
+  background: rgba(250, 179, 135, 0.22);
+}
+
+.hlts-catppuccin-mocha .hlts-diff-sign {
+  width: 24px;
+  text-align: center;
+  color: #89b4fa;
+  user-select: none;
+  -webkit-user-select: none;
+}

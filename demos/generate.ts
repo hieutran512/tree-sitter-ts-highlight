@@ -423,6 +423,8 @@ const html = `<!DOCTYPE html>
     .check { display: flex; align-items: center; gap: 8px; color: #c8c8d4; }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media (max-width: 860px) { .grid-2 { grid-template-columns: 1fr; } }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    @media (max-width: 860px) { .grid-3 { grid-template-columns: 1fr; } }
     .code-wrap pre {
       margin: 0;
       border-radius: 8px;
@@ -445,6 +447,23 @@ const html = `<!DOCTYPE html>
     }
     .symbols-table th { color: #7aa2f7; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
     .small { font-size: 0.8rem; color: #7f8694; }
+    .diff-preview {
+      border: 1px solid #2a2a3a;
+      border-radius: 8px;
+      overflow: auto;
+    }
+    .json-preview {
+      margin: 0;
+      padding: 12px;
+      border: 1px solid #2a2a3a;
+      border-radius: 8px;
+      background: #0f1020;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 12px;
+      max-height: 280px;
+      overflow: auto;
+      white-space: pre;
+    }
 
 ${embeddedThemeCss}
   </style>
@@ -462,7 +481,7 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
 <body>
   <div class="container">
     <h1>tree-sitter-ts-highlight</h1>
-    <p class="subtitle">Interactive playground: select language/theme, toggle semantic highlighting, or paste your own code.</p>
+    <p class="subtitle">Interactive playground: select language/theme, toggle semantic highlighting, compare source diffs, or paste your own code.</p>
 
     <div class="panel">
       <div class="controls">
@@ -491,6 +510,33 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
     <div class="panel">
       <label for="source">Source code</label>
       <textarea id="source"></textarea>
+    </div>
+
+    <div class="panel">
+      <h2>Diff Demo</h2>
+      <p class="muted">Compare two source versions using <strong>side-by-side</strong> or <strong>inline</strong> mode, and inspect the wrapper-friendly <strong>diffModel()</strong> output.</p>
+      <div class="controls" style="margin-bottom:12px">
+        <div>
+          <label for="diffView">Diff view</label>
+          <select id="diffView">
+            <option value="side-by-side">Side by side</option>
+            <option value="inline">Inline</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-bottom:12px">
+        <div>
+          <label for="diffOld">Original source</label>
+          <textarea id="diffOld"></textarea>
+        </div>
+        <div>
+          <label for="diffNew">Updated source</label>
+          <textarea id="diffNew"></textarea>
+        </div>
+      </div>
+      <div class="diff-preview" id="diffPreview"></div>
+      <h2 style="margin-top:16px">Diff Model (for wrappers)</h2>
+      <pre class="json-preview" id="diffModelPreview"></pre>
     </div>
 
     <div class="panel code-wrap">
@@ -534,12 +580,23 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
   <script>
     function normalizeDemoApi(candidate) {
       if (!candidate || typeof candidate !== "object") return undefined;
-      if (typeof candidate.highlight === "function" && Array.isArray(candidate.builtinThemes)) {
+      if (
+        typeof candidate.highlight === "function" &&
+        typeof candidate.highlightDiff === "function" &&
+        typeof candidate.diffModel === "function" &&
+        Array.isArray(candidate.builtinThemes)
+      ) {
         return candidate;
       }
       if ("demoApi" in candidate) {
         const unwrapped = candidate.demoApi;
-        if (unwrapped && typeof unwrapped === "object" && typeof unwrapped.highlight === "function") {
+        if (
+          unwrapped &&
+          typeof unwrapped === "object" &&
+          typeof unwrapped.highlight === "function" &&
+          typeof unwrapped.highlightDiff === "function" &&
+          typeof unwrapped.diffModel === "function"
+        ) {
           return unwrapped;
         }
       }
@@ -556,7 +613,7 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
       throw new Error("Missing embedded demo bundle. Run npm run build && npm run demo:generate. bundleOk=" + String(bundleOk) + " bundleError=" + String(bundleError));
     }
 
-    const { builtinThemes, highlight, extractSymbols, registerProfile } = demoApi;
+    const { builtinThemes, highlight, highlightDiff, diffModel, extractSymbols, registerProfile } = demoApi;
 
     const samples = ${JSON.stringify(languageSamples)};
     const defaultThemeNames = ${JSON.stringify(themeNames)};
@@ -569,16 +626,35 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
     const lineNumbersInput = document.getElementById("lineNumbers");
     const customInput = document.getElementById("customInput");
     const dslBtn = document.getElementById("dslBtn");
+    const diffView = document.getElementById("diffView");
+    const diffOld = document.getElementById("diffOld");
+    const diffNew = document.getElementById("diffNew");
 
     const preview = document.getElementById("preview");
     const previewOff = document.getElementById("previewOff");
     const previewOn = document.getElementById("previewOn");
     const symbolsBody = document.getElementById("symbolsBody");
+    const diffPreview = document.getElementById("diffPreview");
+    const diffModelPreview = document.getElementById("diffModelPreview");
 
     const themeMap = new Map(builtinThemes.map((theme) => [theme.name, theme]));
 
     const dslCode = ${JSON.stringify(dslCode)};
     const dslProfile = ${JSON.stringify(dslProfile)};
+    const diffSamples = {
+      typescript: {
+        oldSource: 'interface User {\\n  id: number;\\n  name: string;\\n}\\n\\nexport function formatUser(user: User): string {\\n  return user.name;\\n}',
+        newSource: 'interface User {\\n  id: number;\\n  name: string;\\n  email?: string;\\n}\\n\\nexport function formatUser(user: User): string {\\n  return user.name + " <" + (user.email ?? "n/a") + ">";\\n}',
+      },
+      javascript: {
+        oldSource: 'function sum(items) {\\n  return items.reduce((acc, item) => acc + item, 0);\\n}',
+        newSource: 'export function sum(items) {\\n  if (!Array.isArray(items)) return 0;\\n  return items.reduce((acc, item) => acc + item, 0);\\n}',
+      },
+      python: {
+        oldSource: 'def greet(name):\\n    return "Hello " + name',
+        newSource: 'def greet(name: str) -> str:\\n    if not name:\\n        return "Hello"\\n    return f"Hello {name}"',
+      },
+    };
 
     function fillLanguages() {
       const entries = Object.entries(samples);
@@ -608,6 +684,53 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
     function renderCode(html, theme) {
       const themeClass = theme && theme.name ? ' hlts-' + theme.name : '';
       return '<pre class="hlts' + themeClass + '"><code>' + html + '</code></pre>';
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function setDiffFromLanguage() {
+      const language = languageSelect.value;
+      const sample = diffSamples[language] || {
+        oldSource: (samples[language] ? samples[language].code : "").split("\\n").slice(0, 12).join("\\n"),
+        newSource: (samples[language] ? samples[language].code : "").split("\\n").slice(0, 12).join("\\n") + "\\n",
+      };
+      diffOld.value = sample.oldSource;
+      diffNew.value = sample.newSource;
+    }
+
+    function renderDiff(language, theme) {
+      const oldSource = diffOld.value;
+      const newSource = diffNew.value;
+      try {
+        const html = highlightDiff(oldSource, newSource, language, {
+          view: diffView.value,
+          semanticHighlighting: semanticInput.checked,
+        });
+        const themeClass = theme && theme.name ? ' hlts-' + theme.name : '';
+        diffPreview.innerHTML = '<div class="hlts' + themeClass + '">' + html + '</div>';
+
+        const model = diffModel(oldSource, newSource, {
+          oldLabel: "Original",
+          newLabel: "Updated",
+        });
+        const compact = {
+          oldLabel: model.oldLabel,
+          newLabel: model.newLabel,
+          totalRows: model.rows.length,
+          rows: model.rows.slice(0, 12),
+        };
+        diffModelPreview.innerHTML = escapeHtml(JSON.stringify(compact, null, 2));
+      } catch (error) {
+        diffPreview.innerHTML = '<pre class="hlts" style="background:#2b1d24;color:#ffb4c1"><code>' + escapeHtml(String(error)) + '</code></pre>';
+        diffModelPreview.textContent = String(error);
+      }
     }
 
     function renderSymbols(source, language) {
@@ -660,6 +783,7 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
       }
 
       renderSymbols(source, language);
+      renderDiff(language, theme);
     }
 
     dslBtn.addEventListener("click", () => {
@@ -670,6 +794,7 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
         languageSelect.value = "pipeline-dsl";
         customInput.checked = false;
         setSourceFromLanguage();
+        setDiffFromLanguage();
         renderAll();
       }
     });
@@ -677,11 +802,15 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
     renderBtn.addEventListener("click", renderAll);
     languageSelect.addEventListener("change", () => {
       setSourceFromLanguage();
+      setDiffFromLanguage();
       renderAll();
     });
     themeSelect.addEventListener("change", renderAll);
     semanticInput.addEventListener("change", renderAll);
     lineNumbersInput.addEventListener("change", renderAll);
+    diffView.addEventListener("change", renderAll);
+    diffOld.addEventListener("input", renderAll);
+    diffNew.addEventListener("input", renderAll);
     customInput.addEventListener("change", () => {
       if (!customInput.checked) {
         setSourceFromLanguage();
@@ -701,6 +830,7 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
     themeSelect.value = "github-dark";
     sourceArea.readOnly = true;
     setSourceFromLanguage();
+    setDiffFromLanguage();
     renderAll();
   </script>
 </body>

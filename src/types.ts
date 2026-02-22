@@ -28,6 +28,57 @@ export interface HighlightOptions {
   language?: string;
 }
 
+// ─── Diff Options ───────────────────────────────────────────────────
+
+export type DiffViewMode = "side-by-side" | "inline";
+
+export type DiffChangeType =
+  | "context"
+  | "added"
+  | "removed"
+  | "modified";
+
+/** One renderable row in a normalized diff model */
+export interface DiffRow {
+  /** Type of change represented by this row */
+  changeType: DiffChangeType;
+  /** Old document line number (null when not present) */
+  oldLineNumber: number | null;
+  /** New document line number (null when not present) */
+  newLineNumber: number | null;
+  /** Old line raw text */
+  oldText: string;
+  /** New line raw text */
+  newText: string;
+}
+
+/** Framework-agnostic diff payload for HTML/React/Vue/CLI wrappers */
+export interface DiffModel {
+  oldLabel: string;
+  newLabel: string;
+  rows: DiffRow[];
+}
+
+/** Options for source-to-source diff rendering */
+export interface DiffOptions {
+  /** Side-by-side split view or single inline view (default: "side-by-side") */
+  view?: DiffViewMode;
+  /** Reclassify overloaded identifiers into richer semantic categories (default: false) */
+  semanticHighlighting?: boolean;
+  /** CSS class prefix (default: "hlts-") */
+  classPrefix?: string;
+  /** Decorations to apply to both old and new sides */
+  decorations?: Decoration[];
+  /** Custom theme for inline styles instead of CSS classes */
+  theme?: HtmlTheme;
+  /** Header label for old/original side (default: "Original") */
+  oldLabel?: string;
+  /** Header label for new/updated side (default: "Updated") */
+  newLabel?: string;
+  /** Include header row/labels in rendered output (default: true) */
+  showHeader?: boolean;
+}
+
 // ─── ANSI Highlight Options ──────────────────────────────────────────
 
 /** Options for ANSI terminal highlight rendering */

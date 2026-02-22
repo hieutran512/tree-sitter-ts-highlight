@@ -91,3 +91,58 @@
 .hlts-tokyo-night .hlts-table tr:hover {
   background: rgba(255, 255, 255, 0.03);
 }
+
+/* Diff views */
+.hlts-tokyo-night .hlts-diff {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+}
+
+.hlts-tokyo-night .hlts-diff-header .hlts-diff-label {
+  text-align: left;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid #292e42;
+}
+
+.hlts-tokyo-night .hlts-diff-gutter {
+  color: #3b4261;
+  text-align: right;
+  user-select: none;
+  -webkit-user-select: none;
+  width: 1%;
+  padding: 0 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.hlts-tokyo-night .hlts-diff-content {
+  white-space: pre;
+  padding: 0 10px;
+  vertical-align: top;
+}
+
+.hlts-tokyo-night .hlts-diff-row.hlts-diff-context {
+  background: transparent;
+}
+
+.hlts-tokyo-night .hlts-diff-row.hlts-diff-added {
+  background: rgba(158, 206, 106, 0.2);
+}
+
+.hlts-tokyo-night .hlts-diff-row.hlts-diff-removed {
+  background: rgba(247, 118, 142, 0.2);
+}
+
+.hlts-tokyo-night .hlts-diff-row.hlts-diff-modified {
+  background: rgba(255, 158, 100, 0.22);
+}
+
+.hlts-tokyo-night .hlts-diff-sign {
+  width: 24px;
+  text-align: center;
+  color: #7aa2f7;
+  user-select: none;
+  -webkit-user-select: none;
+}

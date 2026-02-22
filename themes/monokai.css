@@ -92,3 +92,58 @@
 .hlts-monokai .hlts-table tr:hover {
   background: rgba(255, 255, 255, 0.03);
 }
+
+/* Diff views */
+.hlts-monokai .hlts-diff {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+}
+
+.hlts-monokai .hlts-diff-header .hlts-diff-label {
+  text-align: left;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid #3e3d32;
+}
+
+.hlts-monokai .hlts-diff-gutter {
+  color: #90908a;
+  text-align: right;
+  user-select: none;
+  -webkit-user-select: none;
+  width: 1%;
+  padding: 0 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.hlts-monokai .hlts-diff-content {
+  white-space: pre;
+  padding: 0 10px;
+  vertical-align: top;
+}
+
+.hlts-monokai .hlts-diff-row.hlts-diff-context {
+  background: transparent;
+}
+
+.hlts-monokai .hlts-diff-row.hlts-diff-added {
+  background: rgba(166, 226, 46, 0.18);
+}
+
+.hlts-monokai .hlts-diff-row.hlts-diff-removed {
+  background: rgba(249, 38, 114, 0.2);
+}
+
+.hlts-monokai .hlts-diff-row.hlts-diff-modified {
+  background: rgba(253, 151, 31, 0.2);
+}
+
+.hlts-monokai .hlts-diff-sign {
+  width: 24px;
+  text-align: center;
+  color: #ae81ff;
+  user-select: none;
+  -webkit-user-select: none;
+}

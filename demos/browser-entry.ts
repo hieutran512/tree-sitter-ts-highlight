@@ -1,9 +1,11 @@
-import { builtinThemes, highlight } from "../src/index.js";
+import { builtinThemes, highlight, highlightDiff, diffModel } from "../src/index.js";
 import { extractSymbols, registerProfile } from "tree-sitter-ts";
 
 type DemoApi = {
     builtinThemes: typeof builtinThemes;
     highlight: typeof highlight;
+    highlightDiff: typeof highlightDiff;
+    diffModel: typeof diffModel;
     extractSymbols: typeof extractSymbols;
     registerProfile: typeof registerProfile;
 };
@@ -11,6 +13,8 @@ type DemoApi = {
 const demoApi: DemoApi = {
     builtinThemes,
     highlight,
+    highlightDiff,
+    diffModel,
     extractSymbols,
     registerProfile,
 };

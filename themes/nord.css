@@ -91,3 +91,58 @@
 .hlts-nord .hlts-table tr:hover {
   background: rgba(255, 255, 255, 0.03);
 }
+
+/* Diff views */
+.hlts-nord .hlts-diff {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+}
+
+.hlts-nord .hlts-diff-header .hlts-diff-label {
+  text-align: left;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid #3b4252;
+}
+
+.hlts-nord .hlts-diff-gutter {
+  color: #4c566a;
+  text-align: right;
+  user-select: none;
+  -webkit-user-select: none;
+  width: 1%;
+  padding: 0 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.hlts-nord .hlts-diff-content {
+  white-space: pre;
+  padding: 0 10px;
+  vertical-align: top;
+}
+
+.hlts-nord .hlts-diff-row.hlts-diff-context {
+  background: transparent;
+}
+
+.hlts-nord .hlts-diff-row.hlts-diff-added {
+  background: rgba(163, 190, 140, 0.18);
+}
+
+.hlts-nord .hlts-diff-row.hlts-diff-removed {
+  background: rgba(191, 97, 106, 0.2);
+}
+
+.hlts-nord .hlts-diff-row.hlts-diff-modified {
+  background: rgba(235, 203, 139, 0.2);
+}
+
+.hlts-nord .hlts-diff-sign {
+  width: 24px;
+  text-align: center;
+  color: #81a1c1;
+  user-select: none;
+  -webkit-user-select: none;
+}

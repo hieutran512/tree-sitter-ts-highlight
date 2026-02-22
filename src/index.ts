@@ -5,10 +5,17 @@
 import { tokenize } from "tree-sitter-ts";
 import type { Token } from "tree-sitter-ts";
 import { renderTokensToHtml } from "./html/renderer.js";
+import { renderDiffToHtml } from "./html/diff-renderer.js";
 import { wrapInLines } from "./html/line-wrapper.js";
 import { renderTokensToAnsi } from "./ansi/renderer.js";
 import { enhanceTokenSemantics } from "./semantic/enhancer.js";
-import type { HighlightOptions, AnsiHighlightOptions } from "./types.js";
+import { createDiffModel, createDiffModelWithTokens } from "./diff/model.js";
+import type {
+  HighlightOptions,
+  AnsiHighlightOptions,
+  DiffOptions,
+  DiffModel,
+} from "./types.js";
 
 // ======================== PRIMARY API ========================
 
@@ -64,6 +71,34 @@ export function highlightAnsi(
 ): string {
   const tokens = tokenize(source, language);
   return highlightTokensAnsi(tokens, options);
+}
+
+/**
+ * Compare two source strings and return highlighted diff HTML.
+ *
+ * Supports two view modes:
+ * - `side-by-side`: old/new columns (review-style)
+ * - `inline`: unified single stream with +/- markers
+ */
+export function highlightDiff(
+  oldSource: string,
+  newSource: string,
+  language: string,
+  options: DiffOptions = {},
+): string {
+  const diff = createDiffModelWithTokens(oldSource, newSource, language, options);
+  return renderDiffToHtml(diff, options);
+}
+
+/**
+ * Create a framework-agnostic diff model for custom wrappers (React/Vue/CLI).
+ */
+export function diffModel(
+  oldSource: string,
+  newSource: string,
+  options: DiffOptions = {},
+): DiffModel {
+  return createDiffModel(oldSource, newSource, options);
 }
 
 /**
@@ -154,6 +189,11 @@ function wrapInPre(inner: string, options: HighlightOptions): string {
 export type {
   HighlightOptions,
   AnsiHighlightOptions,
+  DiffOptions,
+  DiffModel,
+  DiffRow,
+  DiffViewMode,
+  DiffChangeType,
   Decoration,
   HtmlTheme,
   AnsiTheme,
@@ -176,10 +216,12 @@ export { builtinThemes, getTheme, getThemeNames } from "./themes/index.js";
 
 // Low-level utilities
 export { renderTokensToHtml } from "./html/renderer.js";
+export { renderDiffToHtml } from "./html/diff-renderer.js";
 export { wrapInLines, groupTokensByLine } from "./html/line-wrapper.js";
 export type { LineGroup } from "./html/line-wrapper.js";
 export { escapeHtml } from "./html/escaper.js";
 export { renderTokensToAnsi } from "./ansi/renderer.js";
+export { createDiffModel, createDiffModelWithTokens } from "./diff/model.js";
 export { applyDecorations } from "./decorations/decorator.js";
 export type { DecoratedToken } from "./decorations/decorator.js";
 export { splitTokensAtRanges } from "./decorations/splitter.js";
