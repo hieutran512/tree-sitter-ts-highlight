@@ -1,0 +1,74 @@
+{
+  "name": "tree-sitter-ts-highlight",
+  "version": "0.1.0",
+  "description": "Syntax highlighting library built on tree-sitter-ts. HTML, ANSI, and decorations.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./themes/default-light.css": "./themes/default-light.css",
+    "./themes/default-dark.css": "./themes/default-dark.css",
+    "./themes/github-light.css": "./themes/github-light.css",
+    "./themes/github-dark.css": "./themes/github-dark.css",
+    "./themes/monokai.css": "./themes/monokai.css",
+    "./themes/dracula.css": "./themes/dracula.css",
+    "./themes/nord.css": "./themes/nord.css",
+    "./themes/solarized-light.css": "./themes/solarized-light.css",
+    "./themes/solarized-dark.css": "./themes/solarized-dark.css",
+    "./themes/tokyo-night.css": "./themes/tokyo-night.css",
+    "./themes/catppuccin-mocha.css": "./themes/catppuccin-mocha.css"
+  },
+  "files": [
+    "dist",
+    "themes"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "demo:generate": "tsx demos/generate.ts",
+    "demo": "npm run build && npm run demo:generate",
+    "typecheck": "tsc --noEmit",
+    "test": "jest --config jest.config.cjs",
+    "test:watch": "jest --config jest.config.cjs --watch"
+  },
+  "peerDependencies": {
+    "tree-sitter-ts": "^0.1.0"
+  },
+  "devDependencies": {
+    "tree-sitter-ts": "^0.1.0",
+    "@swc/core": "^1.13.5",
+    "@swc/jest": "^0.2.39",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^25.3.0",
+    "jest": "^29.7.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "syntax-highlighting",
+    "tree-sitter",
+    "typescript",
+    "html",
+    "ansi",
+    "code-highlighting",
+    "highlighter"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

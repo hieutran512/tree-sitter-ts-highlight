@@ -1,0 +1,34 @@
+/* tree-sitter-ts-highlight - Tokyo Night Theme */
+
+.hlts.hlts-tokyo-night {
+  background: #1a1b26;
+  color: #a9b1d6;
+}
+
+.hlts-tokyo-night .hlts-keyword    { color: #9d7cd8; font-weight: bold; }
+.hlts-tokyo-night .hlts-identifier { color: #c0caf5; }
+.hlts-tokyo-night .hlts-string     { color: #9ece6a; }
+.hlts-tokyo-night .hlts-number     { color: #ff9e64; }
+.hlts-tokyo-night .hlts-comment    { color: #565f89; font-style: italic; }
+.hlts-tokyo-night .hlts-operator   { color: #89ddff; }
+.hlts-tokyo-night .hlts-punctuation { color: #a9b1d6; }
+.hlts-tokyo-night .hlts-type       { color: #2ac3de; }
+.hlts-tokyo-night .hlts-decorator  { color: #bb9af7; }
+.hlts-tokyo-night .hlts-tag        { color: #f7768e; }
+.hlts-tokyo-night .hlts-attribute  { color: #73daca; }
+.hlts-tokyo-night .hlts-meta       { color: #565f89; }
+.hlts-tokyo-night .hlts-regexp     { color: #b4f9f8; }
+.hlts-tokyo-night .hlts-escape     { color: #ff9e64; font-weight: bold; }
+.hlts-tokyo-night .hlts-variable   { color: #7dcfff; }
+.hlts-tokyo-night .hlts-constant   { color: #ff9e64; }
+.hlts-tokyo-night .hlts-error      { color: #f7768e; text-decoration: wavy underline; }
+.hlts-tokyo-night .hlts-plain      { color: #a9b1d6; }
+
+.hlts-tokyo-night .hlts-line-number {
+  color: #3b4261;
+  border-right: 1px solid #292e42;
+}
+
+.hlts-tokyo-night .hlts-table tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}

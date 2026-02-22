@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc:*)",
+      "Bash(npm view:*)",
+      "Bash(npm install)",
+      "Bash(npx tsc:*)",
+      "Bash(npx jest:*)",
+      "Bash(npx tsup)",
+      "Bash(node:*)",
+      "Bash(npx tsx:*)",
+      "WebFetch(domain:highlightjs.org)",
+      "WebFetch(domain:highlightjs.readthedocs.io)"
+    ]
+  }
+}

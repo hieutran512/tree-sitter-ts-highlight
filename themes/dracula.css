@@ -1,0 +1,34 @@
+/* tree-sitter-ts-highlight - Dracula Theme */
+
+.hlts.hlts-dracula {
+  background: #282a36;
+  color: #f8f8f2;
+}
+
+.hlts-dracula .hlts-keyword    { color: #ff79c6; font-weight: bold; }
+.hlts-dracula .hlts-identifier { color: #f8f8f2; }
+.hlts-dracula .hlts-string     { color: #f1fa8c; }
+.hlts-dracula .hlts-number     { color: #bd93f9; }
+.hlts-dracula .hlts-comment    { color: #6272a4; font-style: italic; }
+.hlts-dracula .hlts-operator   { color: #ff79c6; }
+.hlts-dracula .hlts-punctuation { color: #f8f8f2; }
+.hlts-dracula .hlts-type       { color: #8be9fd; font-style: italic; }
+.hlts-dracula .hlts-decorator  { color: #50fa7b; }
+.hlts-dracula .hlts-tag        { color: #ff79c6; }
+.hlts-dracula .hlts-attribute  { color: #50fa7b; }
+.hlts-dracula .hlts-meta       { color: #6272a4; }
+.hlts-dracula .hlts-regexp     { color: #f1fa8c; }
+.hlts-dracula .hlts-escape     { color: #bd93f9; font-weight: bold; }
+.hlts-dracula .hlts-variable   { color: #ffb86c; }
+.hlts-dracula .hlts-constant   { color: #bd93f9; }
+.hlts-dracula .hlts-error      { color: #ff5555; text-decoration: wavy underline; }
+.hlts-dracula .hlts-plain      { color: #f8f8f2; }
+
+.hlts-dracula .hlts-line-number {
+  color: #6272a4;
+  border-right: 1px solid #44475a;
+}
+
+.hlts-dracula .hlts-table tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}

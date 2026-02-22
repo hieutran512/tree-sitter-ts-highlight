@@ -1,0 +1,34 @@
+/* tree-sitter-ts-highlight - GitHub Light Theme */
+
+.hlts.hlts-github-light {
+  background: #ffffff;
+  color: #1f2328;
+}
+
+.hlts-github-light .hlts-keyword    { color: #cf222e; font-weight: bold; }
+.hlts-github-light .hlts-identifier { color: #1f2328; }
+.hlts-github-light .hlts-string     { color: #0a3069; }
+.hlts-github-light .hlts-number     { color: #0550ae; }
+.hlts-github-light .hlts-comment    { color: #6e7781; font-style: italic; }
+.hlts-github-light .hlts-operator   { color: #1f2328; }
+.hlts-github-light .hlts-punctuation { color: #1f2328; }
+.hlts-github-light .hlts-type       { color: #953800; }
+.hlts-github-light .hlts-decorator  { color: #8250df; }
+.hlts-github-light .hlts-tag        { color: #116329; }
+.hlts-github-light .hlts-attribute  { color: #0550ae; }
+.hlts-github-light .hlts-meta       { color: #6e7781; }
+.hlts-github-light .hlts-regexp     { color: #0a3069; }
+.hlts-github-light .hlts-escape     { color: #0550ae; font-weight: bold; }
+.hlts-github-light .hlts-variable   { color: #953800; }
+.hlts-github-light .hlts-constant   { color: #0550ae; }
+.hlts-github-light .hlts-error      { color: #cf222e; text-decoration: wavy underline; }
+.hlts-github-light .hlts-plain      { color: #1f2328; }
+
+.hlts-github-light .hlts-line-number {
+  color: #8c959f;
+  border-right: 1px solid #d1d9e0;
+}
+
+.hlts-github-light .hlts-table tr:hover {
+  background: rgba(0, 0, 0, 0.03);
+}

@@ -1,0 +1,34 @@
+/* tree-sitter-ts-highlight - Solarized Dark Theme */
+
+.hlts.hlts-solarized-dark {
+  background: #002b36;
+  color: #839496;
+}
+
+.hlts-solarized-dark .hlts-keyword    { color: #859900; font-weight: bold; }
+.hlts-solarized-dark .hlts-identifier { color: #839496; }
+.hlts-solarized-dark .hlts-string     { color: #2aa198; }
+.hlts-solarized-dark .hlts-number     { color: #d33682; }
+.hlts-solarized-dark .hlts-comment    { color: #586e75; font-style: italic; }
+.hlts-solarized-dark .hlts-operator   { color: #839496; }
+.hlts-solarized-dark .hlts-punctuation { color: #839496; }
+.hlts-solarized-dark .hlts-type       { color: #b58900; }
+.hlts-solarized-dark .hlts-decorator  { color: #6c71c4; }
+.hlts-solarized-dark .hlts-tag        { color: #268bd2; }
+.hlts-solarized-dark .hlts-attribute  { color: #b58900; }
+.hlts-solarized-dark .hlts-meta       { color: #586e75; }
+.hlts-solarized-dark .hlts-regexp     { color: #dc322f; }
+.hlts-solarized-dark .hlts-escape     { color: #cb4b16; font-weight: bold; }
+.hlts-solarized-dark .hlts-variable   { color: #268bd2; }
+.hlts-solarized-dark .hlts-constant   { color: #d33682; }
+.hlts-solarized-dark .hlts-error      { color: #dc322f; text-decoration: wavy underline; }
+.hlts-solarized-dark .hlts-plain      { color: #839496; }
+
+.hlts-solarized-dark .hlts-line-number {
+  color: #586e75;
+  border-right: 1px solid #073642;
+}
+
+.hlts-solarized-dark .hlts-table tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}

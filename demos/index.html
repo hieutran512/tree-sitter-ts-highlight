@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tree-sitter-ts-highlight — Interactive Demo</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0 20px 80px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f0f14;
+      color: #e6e6e6;
+      line-height: 1.5;
+    }
+    .container { max-width: 1080px; margin: 0 auto; }
+    h1 { margin: 40px 0 8px; font-size: 2rem; }
+    .subtitle { color: #9aa0aa; margin-bottom: 28px; }
+    .panel {
+      border: 1px solid #25253a;
+      border-radius: 10px;
+      background: #141422;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+    label { font-size: 0.82rem; color: #9aa0aa; display: block; margin-bottom: 6px; }
+    select, textarea, button, input[type="checkbox"] {
+      font: inherit;
+    }
+    select, textarea {
+      width: 100%;
+      background: #0f1020;
+      border: 1px solid #2a2a3a;
+      color: #e6e6e6;
+      border-radius: 8px;
+      padding: 10px;
+    }
+    textarea { min-height: 200px; resize: vertical; font-family: 'SF Mono', Menlo, monospace; font-size: 13px; }
+    button {
+      background: #7aa2f7;
+      border: none;
+      color: #101420;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .row { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+    .check { display: flex; align-items: center; gap: 8px; color: #c8c8d4; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 860px) { .grid-2 { grid-template-columns: 1fr; } }
+    .code-wrap pre {
+      margin: 0;
+      border-radius: 8px;
+      overflow-x: auto;
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.5;
+      font-family: 'SF Mono', Menlo, monospace;
+    }
+    h2 { margin: 0 0 10px; font-size: 1.15rem; }
+    .muted { color: #9aa0aa; font-size: 0.92rem; }
+    ul { margin: 8px 0 0 18px; }
+    .symbols-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .symbols-table th, .symbols-table td {
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid #2a2a3a;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 12px;
+    }
+    .symbols-table th { color: #7aa2f7; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .small { font-size: 0.8rem; color: #7f8694; }
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "tree-sitter-ts": "https://esm.sh/tree-sitter-ts@0.1.0"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>tree-sitter-ts-highlight</h1>
+    <p class="subtitle">Interactive playground: select language/theme, toggle semantic highlighting, or paste your own code.</p>
+
+    <div class="panel">
+      <div class="controls">
+        <div>
+          <label for="language">Language</label>
+          <select id="language"></select>
+        </div>
+        <div>
+          <label for="theme">Theme</label>
+          <select id="theme"></select>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button id="renderBtn" type="button">Render</button>
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <label class="check"><input id="semantic" type="checkbox" checked /> Semantic highlighting</label>
+        <label class="check"><input id="lineNumbers" type="checkbox" checked /> Line numbers</label>
+        <label class="check"><input id="customInput" type="checkbox" /> Use custom input</label>
+        <button id="dslBtn" type="button">Register custom DSL profile</button>
+      </div>
+      <p class="small" style="margin-top:10px">Tip: run <strong>npm run build</strong> before opening this file, so browser can import <strong>dist/index.js</strong>.</p>
+    </div>
+
+    <div class="panel">
+      <label for="source">Source code</label>
+      <textarea id="source"></textarea>
+    </div>
+
+    <div class="panel code-wrap">
+      <h2>Selected Output</h2>
+      <div id="preview"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Why use this library?</h2>
+      <p class="muted">Compared with regex-based highlighters, this demo shows tree-sitter-ts benefits in practice:</p>
+      <ul>
+        <li>Semantic reclassification (same token stream, richer visual contrast for properties/types/variables).</li>
+        <li>Language profile extension at runtime (register custom DSL without plugin recompilation).</li>
+        <li>Code structure extraction via <strong>extractSymbols()</strong> for editor-like features.</li>
+      </ul>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel code-wrap">
+        <h2>Comparison: semantic OFF</h2>
+        <div id="previewOff"></div>
+      </div>
+      <div class="panel code-wrap">
+        <h2>Comparison: semantic ON</h2>
+        <div id="previewOn"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Extracted Symbols</h2>
+      <p class="muted">Live output from <strong>extractSymbols(source, language)</strong> for the current code.</p>
+      <table class="symbols-table">
+        <thead>
+          <tr><th>Kind</th><th>Name</th><th>Start</th><th>End</th></tr>
+        </thead>
+        <tbody id="symbolsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script type="module">
+    import { builtinThemes, highlight } from "../dist/index.js";
+    import { extractSymbols, registerProfile } from "tree-sitter-ts";
+
+    const samples = {"typescript":{"label":"TypeScript","code":"import { readFile } from \"node:fs/promises\";\n\ninterface Config {\n  port: number;\n  host: string;\n  debug?: boolean;\n}\n\nexport class Server {\n  constructor(private config: Config) {}\n\n  start(): void {\n    const { host, port } = this.config;\n    console.log(\"Server running at \" + host + \":\" + port);\n  }\n}\n\nexport function createServer(port = 3000): Server {\n  return new Server({ port, host: \"localhost\", debug: true });\n}"},"javascript":{"label":"JavaScript","code":"const users = [\n  { name: \"Ada\", age: 31 },\n  { name: \"Lin\", age: 17 },\n];\n\nfunction getAdults(list) {\n  return list.filter((item) => item.age >= 18).map((item) => item.name);\n}\n\nconsole.log(getAdults(users));"},"python":{"label":"Python","code":"from dataclasses import dataclass\n\n@dataclass\nclass User:\n    name: str\n    active: bool = True\n\n\ndef greet(user: User) -> str:\n    if user.active:\n        return f\"Hello, {user.name}!\"\n    return \"Inactive user\""},"go":{"label":"Go","code":"package main\n\nimport \"fmt\"\n\ntype User struct {\n    Name string\n    Age  int\n}\n\nfunc main() {\n    user := User{Name: \"Go\", Age: 16}\n    fmt.Println(user)\n}"},"rust":{"label":"Rust","code":"struct User {\n    name: String,\n    age: u32,\n}\n\nfn main() {\n    let user = User { name: String::from(\"Rust\"), age: 8 };\n    println!(\"{} {}\", user.name, user.age);\n}"},"java":{"label":"Java","code":"public class Main {\n  static class User {\n    String name;\n    int age;\n\n    User(String name, int age) {\n      this.name = name;\n      this.age = age;\n    }\n  }\n\n  public static void main(String[] args) {\n    User user = new User(\"Java\", 30);\n    System.out.println(user.name + \" \" + user.age);\n  }\n}"},"csharp":{"label":"C#","code":"using System;\n\nrecord User(string Name, int Age);\n\nvar user = new User(\"CSharp\", 20);\nConsole.WriteLine($\"{user.Name} {user.Age}\");"},"cpp":{"label":"C++","code":"#include <iostream>\n\nclass User {\npublic:\n  std::string name;\n  int age;\n\n  User(std::string n, int a) : name(n), age(a) {}\n};\n\nint main() {\n  User user(\"CPP\", 40);\n  std::cout << user.name << \" \" << user.age << std::endl;\n}"},"ruby":{"label":"Ruby","code":"class User\n  attr_reader :name, :age\n\n  def initialize(name, age)\n    @name = name\n    @age = age\n  end\nend\n\nuser = User.new(\"Ruby\", 28)\nputs \"#{user.name} #{user.age}\""},"php":{"label":"PHP","code":"<?php\nclass User {\n  public function __construct(\n    public string $name,\n    public int $age\n  ) {}\n}\n\n$user = new User(\"PHP\", 23);\necho $user->name . \" \" . $user->age;"},"kotlin":{"label":"Kotlin","code":"data class User(val name: String, val age: Int)\n\nfun main() {\n    val user = User(\"Kotlin\", 12)\n    println(\"${user.name} ${user.age}\")\n}"},"swift":{"label":"Swift","code":"struct User {\n    let name: String\n    let age: Int\n}\n\nlet user = User(name: \"Swift\", age: 11)\nprint(\"(user.name) (user.age)\")"},"css":{"label":"CSS","code":":root {\n  --accent: #7aa2f7;\n}\n\n.card {\n  color: var(--accent);\n  border: 1px solid #2a2a3a;\n}"},"html":{"label":"HTML","code":"<section class=\"card\">\n  <h1>Demo</h1>\n  <p data-id=\"42\">Hello</p>\n</section>"},"json":{"label":"JSON","code":"{\n  \"name\": \"json-demo\",\n  \"enabled\": true,\n  \"ports\": [3000, 3001],\n  \"meta\": { \"owner\": \"team\" }\n}"},"yaml":{"label":"YAML","code":"name: yaml-demo\nenabled: true\nports:\n  - 3000\n  - 3001\nmeta:\n  owner: team"},"sql":{"label":"SQL","code":"SELECT id, name\nFROM users\nWHERE active = true\nORDER BY created_at DESC\nLIMIT 10;"},"shell":{"label":"Shell","code":"#!/usr/bin/env bash\nset -euo pipefail\n\nname=\"demo\"\necho \"running $name\""},"markdown":{"label":"Markdown","code":"# Demo\n\n- **Bold** item\n- Inline code: `npm run build`\n\n> Quote"},"xml":{"label":"XML","code":"<users>\n  <user id=\"1\" active=\"true\">Alice</user>\n  <user id=\"2\" active=\"false\">Bob</user>\n</users>"},"toml":{"label":"TOML","code":"# TOML demo config\ntitle = \"tree-sitter-ts-highlight\"\nenabled = true\ntimeout = 30\npi = 3.14159\nhosts = [\"alpha\", \"beta\"]\n\n[database]\nserver = \"192.168.1.1\"\nports = [8001, 8001, 8002]\nconnection_max = 5000\n\n[owner]\nname = \"Tom Preston-Werner\"\ndob = 1979-05-27T07:32:00Z"}};
+    const defaultThemeNames = ["default-light","default-dark","github-light","github-dark","monokai","dracula","nord","solarized-light","solarized-dark","tokyo-night","catppuccin-mocha"];
+
+    const languageSelect = document.getElementById("language");
+    const themeSelect = document.getElementById("theme");
+    const sourceArea = document.getElementById("source");
+    const renderBtn = document.getElementById("renderBtn");
+    const semanticInput = document.getElementById("semantic");
+    const lineNumbersInput = document.getElementById("lineNumbers");
+    const customInput = document.getElementById("customInput");
+    const dslBtn = document.getElementById("dslBtn");
+
+    const preview = document.getElementById("preview");
+    const previewOff = document.getElementById("previewOff");
+    const previewOn = document.getElementById("previewOn");
+    const symbolsBody = document.getElementById("symbolsBody");
+
+    const themeMap = new Map(builtinThemes.map((theme) => [theme.name, theme]));
+
+    const dslCode = "# Pipeline DSL sample\npipeline deploy {\n  stage build {\n    step compile\n    step test\n  }\n\n  stage release {\n    when env.TARGET = \"prod\"\n    step publish\n  }\n}";
+    const dslProfile = {"name":"pipeline-dsl","displayName":"Pipeline DSL","version":"1.0.0","fileExtensions":[".pipe"],"lexer":{"charClasses":{"identStart":{"union":[{"predefined":"letter"},{"chars":"_"}]},"identPart":{"union":[{"predefined":"alphanumeric"},{"chars":"_-"}]}},"tokenTypes":{"keyword":{"category":"keyword"},"identifier":{"category":"identifier"},"string":{"category":"string"},"number":{"category":"number"},"comment":{"category":"comment"},"operator":{"category":"operator"},"punctuation":{"category":"punctuation"},"type":{"category":"type"},"whitespace":{"category":"whitespace"},"newline":{"category":"newline"}},"initialState":"default","skipTokens":["whitespace","newline"],"states":{"default":{"rules":[{"match":{"kind":"keywords","words":["pipeline","stage","step","when","env"]},"token":"keyword"},{"match":{"kind":"keywords","words":["String","Number","Boolean","File"]},"token":"type"},{"match":{"kind":"line","start":"#"},"token":"comment"},{"match":{"kind":"delimited","open":"\"","close":"\"","escape":"\\"},"token":"string"},{"match":{"kind":"number","integer":true,"float":true},"token":"number"},{"match":{"kind":"string","value":["->","=>","|","="]},"token":"operator"},{"match":{"kind":"string","value":["{","}","(",")","[","]",",",":",";","."]},"token":"punctuation"},{"match":{"kind":"charSequence","first":{"ref":"identStart"},"rest":{"ref":"identPart"}},"token":"identifier"},{"match":{"kind":"charSequence","first":{"predefined":"whitespace"},"rest":{"predefined":"whitespace"}},"token":"whitespace"},{"match":{"kind":"string","value":"\n"},"token":"newline"}]}}}};
+
+    function fillLanguages() {
+      const entries = Object.entries(samples);
+      languageSelect.innerHTML = entries
+        .map(([id, item]) => '<option value="' + id + '">' + item.label + '</option>')
+        .join("");
+    }
+
+    function fillThemes() {
+      themeSelect.innerHTML = defaultThemeNames
+        .map((name) => '<option value="' + name + '">' + name + '</option>')
+        .join("");
+    }
+
+    function getSelectedCode() {
+      const lang = languageSelect.value;
+      if (customInput.checked) return sourceArea.value;
+      return samples[lang]?.code ?? "";
+    }
+
+    function setSourceFromLanguage() {
+      if (!customInput.checked) {
+        sourceArea.value = samples[languageSelect.value]?.code ?? "";
+      }
+    }
+
+    function renderCode(html, theme) {
+      return '<pre class="hlts" style="background:' + (theme.background ?? "#0f0f14") + ';color:' + (theme.foreground ?? "#e6e6e6") + '"><code>' + html + '</code></pre>';
+    }
+
+    function renderSymbols(source, language) {
+      try {
+        const symbols = extractSymbols(source, language);
+        if (!symbols.length) {
+          symbolsBody.innerHTML = '<tr><td colspan="4" class="muted">No symbols extracted for this sample.</td></tr>';
+          return;
+        }
+
+        symbolsBody.innerHTML = symbols
+          .slice(0, 24)
+          .map((symbol) =>
+            '<tr><td>' + symbol.kind + '</td><td>' + symbol.name + '</td><td>' + symbol.startLine + '</td><td>' + symbol.endLine + '</td></tr>'
+          )
+          .join("");
+      } catch (error) {
+        symbolsBody.innerHTML = '<tr><td colspan="4" class="muted">Symbol extraction is unavailable: ' + String(error) + '</td></tr>';
+      }
+    }
+
+    function renderAll() {
+      const language = languageSelect.value;
+      const source = getSelectedCode();
+      const theme = themeMap.get(themeSelect.value) ?? builtinThemes[0];
+      const withLineNumbers = lineNumbersInput.checked;
+
+      try {
+        const selectedHtml = highlight(source, language, {
+          theme,
+          lineNumbers: withLineNumbers,
+          semanticHighlighting: semanticInput.checked,
+        });
+        const baseHtml = highlight(source, language, {
+          theme,
+          lineNumbers: withLineNumbers,
+          semanticHighlighting: false,
+        });
+        const semanticHtml = highlight(source, language, {
+          theme,
+          lineNumbers: withLineNumbers,
+          semanticHighlighting: true,
+        });
+
+        preview.innerHTML = renderCode(selectedHtml, theme);
+        previewOff.innerHTML = renderCode(baseHtml, theme);
+        previewOn.innerHTML = renderCode(semanticHtml, theme);
+      } catch (error) {
+        const message = String(error);
+        preview.innerHTML = '<pre class="hlts" style="background:#2b1d24;color:#ffb4c1"><code>' + message + '</code></pre>';
+        previewOff.innerHTML = "";
+        previewOn.innerHTML = "";
+      }
+
+      renderSymbols(source, language);
+    }
+
+    dslBtn.addEventListener("click", () => {
+      if (!samples["pipeline-dsl"]) {
+        registerProfile(dslProfile);
+        samples["pipeline-dsl"] = { label: "Pipeline DSL (custom)", code: dslCode };
+        fillLanguages();
+        languageSelect.value = "pipeline-dsl";
+        customInput.checked = false;
+        setSourceFromLanguage();
+        renderAll();
+      }
+    });
+
+    renderBtn.addEventListener("click", renderAll);
+    languageSelect.addEventListener("change", () => {
+      setSourceFromLanguage();
+      renderAll();
+    });
+    themeSelect.addEventListener("change", renderAll);
+    semanticInput.addEventListener("change", renderAll);
+    lineNumbersInput.addEventListener("change", renderAll);
+    customInput.addEventListener("change", () => {
+      if (!customInput.checked) {
+        setSourceFromLanguage();
+      }
+      sourceArea.readOnly = !customInput.checked;
+      renderAll();
+    });
+    sourceArea.addEventListener("input", () => {
+      if (customInput.checked) {
+        renderAll();
+      }
+    });
+
+    fillLanguages();
+    fillThemes();
+    languageSelect.value = "typescript";
+    themeSelect.value = "github-dark";
+    sourceArea.readOnly = true;
+    setSourceFromLanguage();
+    renderAll();
+  </script>
+</body>
+</html>
