@@ -1,11 +1,9 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getThemeNames } from "../src/index.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const demoBundlePath = join(__dirname, "..", "dist", "demo.iife.js");
-const demoBundle = readFileSync(demoBundlePath, "utf-8").replaceAll("</script>", "<\\/script>");
 
 function scopeThemeCss(themeName: string, css: string): string {
   const themeClass = `hlts-${themeName}`;
@@ -46,6 +44,104 @@ const embeddedThemeCss = getThemeNames()
     return scopeThemeCss(name, rawCss);
   })
   .join("\n\n");
+
+const treeSitterTsProxyJs = `const params = new URLSearchParams(window.location.search);
+const preferLocal = params.get("source") === "local";
+
+const candidates = preferLocal
+  ? [
+      "../vendor/tree-sitter-ts/index.js",
+      "../../../tree-sitter-ts/dist/index.js",
+      "../../tree-sitter-ts/dist/index.js",
+      "../tree-sitter-ts/dist/index.js",
+      "https://esm.sh/tree-sitter-ts@latest",
+    ]
+  : [
+      "https://esm.sh/tree-sitter-ts@latest",
+      "../vendor/tree-sitter-ts/index.js",
+      "../../../tree-sitter-ts/dist/index.js",
+      "../../tree-sitter-ts/dist/index.js",
+      "../tree-sitter-ts/dist/index.js",
+    ];
+
+async function loadModule() {
+  const failures = [];
+
+  for (const specifier of candidates) {
+    try {
+      const mod = await import(specifier);
+      return { mod, specifier };
+    } catch (error) {
+      failures.push(specifier + ": " + String(error));
+    }
+  }
+
+  throw new Error(["Failed to load tree-sitter-ts from any fallback source.", ...failures].join("\\n"));
+}
+
+const loaded = await loadModule();
+const mod = loaded.mod;
+
+if (typeof mod.tokenize !== "function") {
+  throw new Error("Loaded tree-sitter-ts module but tokenize export is missing.");
+}
+
+export const tokenize = mod.tokenize;
+export const extractSymbols = mod.extractSymbols;
+export const registerProfile = mod.registerProfile;
+export const __source = loaded.specifier;
+`;
+
+const treeSitterTsHighlightProxyJs = `const params = new URLSearchParams(window.location.search);
+const preferLocal = params.get("source") === "local";
+
+const candidates = preferLocal
+  ? [
+      "../vendor/tree-sitter-ts-highlight/index.js",
+      "../../../tree-sitter-ts-highlight/dist/index.js",
+      "../../tree-sitter-ts-highlight/dist/index.js",
+      "../tree-sitter-ts-highlight/dist/index.js",
+      "https://esm.sh/tree-sitter-ts-highlight@latest",
+    ]
+  : [
+      "https://esm.sh/tree-sitter-ts-highlight@latest",
+      "../vendor/tree-sitter-ts-highlight/index.js",
+      "../../../tree-sitter-ts-highlight/dist/index.js",
+      "../../tree-sitter-ts-highlight/dist/index.js",
+      "../tree-sitter-ts-highlight/dist/index.js",
+    ];
+
+async function loadModule() {
+  const failures = [];
+
+  for (const specifier of candidates) {
+    try {
+      const mod = await import(specifier);
+      return { mod, specifier };
+    } catch (error) {
+      failures.push(specifier + ": " + String(error));
+    }
+  }
+
+  throw new Error(["Failed to load tree-sitter-ts-highlight from any fallback source.", ...failures].join("\\n"));
+}
+
+const loaded = await loadModule();
+const mod = loaded.mod;
+
+const required = ["builtinThemes", "highlight", "highlightDiff", "diffModel"];
+for (const name of required) {
+  if (!(name in mod)) {
+    throw new Error("Loaded tree-sitter-ts-highlight module but missing export: " + name);
+  }
+}
+
+export const builtinThemes = mod.builtinThemes;
+export const highlight = mod.highlight;
+export const highlightDiff = mod.highlightDiff;
+export const diffModel = mod.diffModel;
+export const __source = loaded.specifier;
+`;
 
 const languageSamples: Record<string, { label: string; code: string }> = {
   typescript: {
@@ -372,6 +468,14 @@ const html = `<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="light dark" />
   <title>tree-sitter-ts-highlight — Interactive Demo</title>
+  <script type="importmap">
+  {
+    "imports": {
+      "tree-sitter-ts": "./runtime/tree-sitter-ts-proxy.js",
+      "tree-sitter-ts-highlight": "./runtime/tree-sitter-ts-highlight-proxy.js"
+    }
+  }
+  </script>
   <style>
     * { box-sizing: border-box; }
     :root {
@@ -529,16 +633,6 @@ const html = `<!DOCTYPE html>
 
 ${embeddedThemeCss}
   </style>
-  <script>
-window.__TS_DEMO_BUNDLE_OK__ = false;
-window.__TS_DEMO_BUNDLE_ERROR__ = null;
-try {
-${demoBundle}
-window.__TS_DEMO_BUNDLE_OK__ = true;
-} catch (error) {
-window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : error);
-}
-  </script>
 </head>
 <body>
   <div class="container">
@@ -570,6 +664,7 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
         <label class="check"><input id="customInput" type="checkbox" /> Use custom input</label>
         <button id="dslBtn" type="button">Register custom DSL profile</button>
       </div>
+      <p id="runtimeStatus" class="small" style="margin-top:8px">Loading runtime...</p>
       <p class="small" style="margin-top:10px">Tip: run <strong>npm run build</strong> then <strong>npm run demo:generate</strong> to refresh this single-file demo for GitHub Pages/static hosting.</p>
     </div>
 
@@ -656,40 +751,42 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
     </section>
   </div>
 
-  <script>
-    function normalizeDemoApi(candidate) {
-      if (!candidate || typeof candidate !== "object") return undefined;
-      if (
-        typeof candidate.highlight === "function" &&
-        typeof candidate.highlightDiff === "function" &&
-        typeof candidate.diffModel === "function" &&
-        Array.isArray(candidate.builtinThemes)
-      ) {
-        return candidate;
-      }
-      if ("demoApi" in candidate) {
-        const unwrapped = candidate.demoApi;
-        if (
-          unwrapped &&
-          typeof unwrapped === "object" &&
-          typeof unwrapped.highlight === "function" &&
-          typeof unwrapped.highlightDiff === "function" &&
-          typeof unwrapped.diffModel === "function"
-        ) {
-          return unwrapped;
-        }
-      }
-      return undefined;
+  <script type="module">
+    const runtimeStatus = document.getElementById("runtimeStatus");
+
+    function setRuntimeStatus(level, text) {
+      if (!runtimeStatus) return;
+      runtimeStatus.textContent = text;
+      runtimeStatus.setAttribute("data-level", level);
     }
 
-    const fromGlobalThisRaw = typeof globalThis !== "undefined" ? globalThis.TreeSitterTSHighlightDemo : undefined;
-    const fromWindowRaw = typeof window !== "undefined" ? window.TreeSitterTSHighlightDemo : undefined;
-    const fromVarRaw = typeof TreeSitterTSHighlightDemo !== "undefined" ? TreeSitterTSHighlightDemo : undefined;
-    const demoApi = normalizeDemoApi(fromGlobalThisRaw) || normalizeDemoApi(fromWindowRaw) || normalizeDemoApi(fromVarRaw);
-    if (!demoApi) {
-      const bundleOk = typeof window !== "undefined" ? window.__TS_DEMO_BUNDLE_OK__ : undefined;
-      const bundleError = typeof window !== "undefined" ? window.__TS_DEMO_BUNDLE_ERROR__ : undefined;
-      throw new Error("Missing embedded demo bundle. Run npm run build && npm run demo:generate. bundleOk=" + String(bundleOk) + " bundleError=" + String(bundleError));
+    setRuntimeStatus("warn", "Loading runtime...");
+
+    let demoApi;
+    let runtimeSource;
+    try {
+      const [highlightMod, parserMod] = await Promise.all([
+        import("tree-sitter-ts-highlight"),
+        import("tree-sitter-ts"),
+      ]);
+
+      demoApi = {
+        builtinThemes: highlightMod.builtinThemes,
+        highlight: highlightMod.highlight,
+        highlightDiff: highlightMod.highlightDiff,
+        diffModel: highlightMod.diffModel,
+        extractSymbols: parserMod.extractSymbols,
+        registerProfile: parserMod.registerProfile,
+      };
+
+      const highlightSource = "__source" in highlightMod ? highlightMod.__source : "tree-sitter-ts-highlight";
+      const parserSource = "__source" in parserMod ? parserMod.__source : "tree-sitter-ts";
+      runtimeSource = String(highlightSource) + " + " + String(parserSource);
+      setRuntimeStatus("ok", "Runtime: " + runtimeSource);
+    } catch (error) {
+      const message = String(error && error.message ? error.message : error);
+      setRuntimeStatus("error", "Runtime failed: " + message);
+      throw error;
     }
 
     const { builtinThemes, highlight, highlightDiff, diffModel, extractSymbols, registerProfile } = demoApi;
@@ -996,8 +1093,28 @@ window.__TS_DEMO_BUNDLE_ERROR__ = String(error && error.stack ? error.stack : er
 </html>`;
 
 const outPath = join(__dirname, "index.html");
+const runtimeDir = join(__dirname, "runtime");
+const vendorDir = join(__dirname, "vendor");
+const vendorHighlightDir = join(vendorDir, "tree-sitter-ts-highlight");
+const vendorTreeSitterDir = join(vendorDir, "tree-sitter-ts");
+
+mkdirSync(runtimeDir, { recursive: true });
+mkdirSync(vendorHighlightDir, { recursive: true });
+mkdirSync(vendorTreeSitterDir, { recursive: true });
+
+writeFileSync(join(runtimeDir, "tree-sitter-ts-proxy.js"), treeSitterTsProxyJs, "utf-8");
+writeFileSync(join(runtimeDir, "tree-sitter-ts-highlight-proxy.js"), treeSitterTsHighlightProxyJs, "utf-8");
+writeFileSync(join(vendorHighlightDir, "index.js"), readFileSync(join(__dirname, "..", "dist", "index.js"), "utf-8"), "utf-8");
+writeFileSync(
+  join(vendorTreeSitterDir, "index.js"),
+  readFileSync(join(__dirname, "..", "node_modules", "tree-sitter-ts", "dist", "index.js"), "utf-8"),
+  "utf-8",
+);
+
 writeFileSync(outPath, html, "utf-8");
 
 console.log(`Demo written to ${outPath}`);
+console.log(`Runtime proxies written to ${runtimeDir}`);
+console.log(`Vendor modules written to ${vendorDir}`);
 console.log(`  ${Object.keys(languageSamples).length} built-in languages, ${themeNames.length} themes`);
 console.log(`  Open in browser: file://${outPath.replace(/\\/g, "/")}`);
