@@ -1,5 +1,6 @@
-/** @type {import('jest').Config} */
-module.exports = {
+import type { Config } from "jest";
+
+const config: Config = {
   transform: {
     "^.+\\.tsx?$": [
       "@swc/jest",
@@ -22,3 +23,5 @@ module.exports = {
     "^(\\.{1,2}/.*)\\.js$": "$1",
   },
 };
+
+export default config;
