@@ -283,7 +283,7 @@ npm run build
 Demo app:
 
 ```bash
-npm run demos:serve
+npm run docs:serve
 ```
 
 ## License

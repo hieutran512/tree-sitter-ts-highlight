@@ -4,7 +4,13 @@
     {
       "name": "demo",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["node_modules/http-server/bin/http-server", "demos", "-p", "4171", "-c-1"],
+      "runtimeArgs": [
+        "node_modules/http-server/bin/http-server",
+        "docs",
+        "-p",
+        "4171",
+        "-c-1"
+      ],
       "port": 4171
     }
   ]

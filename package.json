@@ -35,8 +35,8 @@
   ],
   "scripts": {
     "build": "tsup && tsup --config tsup.demo.config.ts",
-    "demos:prepare": "tsx demos/generate.ts",
-    "demos:serve": "npm run build && npm run demos:prepare && http-server demos -p 4171 -c-1",
+    "docs:prepare": "tsx docs/generate.ts",
+    "docs:serve": "npm run build && npm run docs:prepare && http-server docs -p 4171 -c-1",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
