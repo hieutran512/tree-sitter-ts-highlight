@@ -1,20 +1,20 @@
 const params = new URLSearchParams(window.location.search);
-const preferLocal = params.get("source") === "local";
+const preferRemote = params.get("source") === "remote";
 
-const candidates = preferLocal
+const candidates = preferRemote
   ? [
+      "https://esm.sh/tree-sitter-ts-highlight@latest",
       "../vendor/tree-sitter-ts-highlight/index.js",
       "../../../tree-sitter-ts-highlight/dist/index.js",
       "../../tree-sitter-ts-highlight/dist/index.js",
       "../tree-sitter-ts-highlight/dist/index.js",
-      "https://esm.sh/tree-sitter-ts-highlight@latest",
     ]
   : [
-      "https://esm.sh/tree-sitter-ts-highlight@latest",
       "../vendor/tree-sitter-ts-highlight/index.js",
       "../../../tree-sitter-ts-highlight/dist/index.js",
       "../../tree-sitter-ts-highlight/dist/index.js",
       "../tree-sitter-ts-highlight/dist/index.js",
+      "https://esm.sh/tree-sitter-ts-highlight@latest",
     ];
 
 async function loadModule() {
@@ -46,4 +46,5 @@ export const builtinThemes = mod.builtinThemes;
 export const highlight = mod.highlight;
 export const highlightDiff = mod.highlightDiff;
 export const diffModel = mod.diffModel;
+export const decorateLineTableWithSymbolBlocks = mod.decorateLineTableWithSymbolBlocks ?? ((html) => html);
 export const __source = loaded.specifier;

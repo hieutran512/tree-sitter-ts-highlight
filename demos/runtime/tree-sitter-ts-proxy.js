@@ -1,20 +1,20 @@
 const params = new URLSearchParams(window.location.search);
-const preferLocal = params.get("source") === "local";
+const preferRemote = params.get("source") === "remote";
 
-const candidates = preferLocal
+const candidates = preferRemote
   ? [
+      "https://esm.sh/tree-sitter-ts@latest",
       "../vendor/tree-sitter-ts/index.js",
       "../../../tree-sitter-ts/dist/index.js",
       "../../tree-sitter-ts/dist/index.js",
       "../tree-sitter-ts/dist/index.js",
-      "https://esm.sh/tree-sitter-ts@latest",
     ]
   : [
-      "https://esm.sh/tree-sitter-ts@latest",
       "../vendor/tree-sitter-ts/index.js",
       "../../../tree-sitter-ts/dist/index.js",
       "../../tree-sitter-ts/dist/index.js",
       "../tree-sitter-ts/dist/index.js",
+      "https://esm.sh/tree-sitter-ts@latest",
     ];
 
 async function loadModule() {

@@ -88,6 +88,11 @@
   -webkit-user-select: none;
 }
 
+.hlts-catppuccin-mocha .hlts-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
 .hlts-catppuccin-mocha .hlts-table tr:hover {
   background: rgba(255, 255, 255, 0.03);
 }

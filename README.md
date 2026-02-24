@@ -176,6 +176,28 @@ const html = highlight(source, "typescript", {
 });
 ```
 
+### Symbol fold arrows (optional)
+
+Use `decorateLineTableWithSymbolBlocks()` to enrich line-number HTML with symbol fold toggles.
+
+```ts
+import {
+  highlight,
+  decorateLineTableWithSymbolBlocks,
+} from "tree-sitter-ts-highlight";
+import { extractSymbols } from "tree-sitter-ts";
+
+const source = `function add(a, b) {\n  return a + b;\n}`;
+const symbols = extractSymbols(source, "typescript");
+
+const htmlWithLines = highlight(source, "typescript", { lineNumbers: true });
+const htmlWithBlocks = decorateLineTableWithSymbolBlocks(htmlWithLines, symbols, {
+  showFoldArrows: true,
+});
+```
+
+Fold arrows are shown only for symbols whose content spans multiple lines.
+
 ## Terminal / CLI usage
 
 ```ts
@@ -220,6 +242,7 @@ const diffHtml = highlightDiff(oldCode, newCode, "typescript", {
 
 - `renderTokensToHtml`, `renderTokensToAnsi`
 - `wrapInLines`, `groupTokensByLine`
+- `decorateLineTableWithSymbolBlocks`
 - `renderDiffToHtml`
 - `createDiffModel`, `createDiffModelWithTokens`
 - `applyDecorations`, `splitTokensAtRanges`
@@ -237,6 +260,16 @@ import type { Token, Range, TokenCategory } from "tree-sitter-ts-highlight";
 ## Language support
 
 Language parsing/tokenization comes from `tree-sitter-ts`. Pass either language names (for example `"typescript"`, `"python"`) or extensions like `".ts"`.
+
+### Symbol range update (`tree-sitter-ts >= 0.1.3-beta.2`)
+
+`extractSymbols()` now returns `nameRange` and `contentRange` on each symbol.
+
+- `startLine` and `endLine` were removed upstream.
+- `nameRange` points to the symbol name token span.
+- `contentRange` points to the full symbol content span.
+
+This enables richer editor features such as symbol-name highlighting and content collapse/expand behaviors.
 
 ## Development
 

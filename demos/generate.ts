@@ -46,22 +46,22 @@ const embeddedThemeCss = getThemeNames()
   .join("\n\n");
 
 const treeSitterTsProxyJs = `const params = new URLSearchParams(window.location.search);
-const preferLocal = params.get("source") === "local";
+const preferRemote = params.get("source") === "remote";
 
-const candidates = preferLocal
+const candidates = preferRemote
   ? [
+      "https://esm.sh/tree-sitter-ts@latest",
       "../vendor/tree-sitter-ts/index.js",
       "../../../tree-sitter-ts/dist/index.js",
       "../../tree-sitter-ts/dist/index.js",
       "../tree-sitter-ts/dist/index.js",
-      "https://esm.sh/tree-sitter-ts@latest",
     ]
   : [
-      "https://esm.sh/tree-sitter-ts@latest",
       "../vendor/tree-sitter-ts/index.js",
       "../../../tree-sitter-ts/dist/index.js",
       "../../tree-sitter-ts/dist/index.js",
       "../tree-sitter-ts/dist/index.js",
+      "https://esm.sh/tree-sitter-ts@latest",
     ];
 
 async function loadModule() {
@@ -93,22 +93,22 @@ export const __source = loaded.specifier;
 `;
 
 const treeSitterTsHighlightProxyJs = `const params = new URLSearchParams(window.location.search);
-const preferLocal = params.get("source") === "local";
+const preferRemote = params.get("source") === "remote";
 
-const candidates = preferLocal
+const candidates = preferRemote
   ? [
+      "https://esm.sh/tree-sitter-ts-highlight@latest",
       "../vendor/tree-sitter-ts-highlight/index.js",
       "../../../tree-sitter-ts-highlight/dist/index.js",
       "../../tree-sitter-ts-highlight/dist/index.js",
       "../tree-sitter-ts-highlight/dist/index.js",
-      "https://esm.sh/tree-sitter-ts-highlight@latest",
     ]
   : [
-      "https://esm.sh/tree-sitter-ts-highlight@latest",
       "../vendor/tree-sitter-ts-highlight/index.js",
       "../../../tree-sitter-ts-highlight/dist/index.js",
       "../../tree-sitter-ts-highlight/dist/index.js",
       "../tree-sitter-ts-highlight/dist/index.js",
+      "https://esm.sh/tree-sitter-ts-highlight@latest",
     ];
 
 async function loadModule() {
@@ -140,6 +140,7 @@ export const builtinThemes = mod.builtinThemes;
 export const highlight = mod.highlight;
 export const highlightDiff = mod.highlightDiff;
 export const diffModel = mod.diffModel;
+export const decorateLineTableWithSymbolBlocks = mod.decorateLineTableWithSymbolBlocks ?? ((html) => html);
 export const __source = loaded.specifier;
 `;
 
@@ -595,7 +596,7 @@ const html = `<!DOCTYPE html>
       margin: 0;
       border-radius: 8px;
       overflow-x: auto;
-      padding: 16px;
+      padding: 8px;
       font-size: 13px;
       line-height: 1.5;
       font-family: 'SF Mono', Menlo, monospace;
@@ -630,6 +631,7 @@ const html = `<!DOCTYPE html>
       overflow: auto;
       white-space: pre;
     }
+    .hlts-symbol-fold-toggle:hover { opacity: 1 !important; }
 
 ${embeddedThemeCss}
   </style>
@@ -661,6 +663,7 @@ ${embeddedThemeCss}
       <div class="row" style="margin-top:12px">
         <label class="check"><input id="semantic" type="checkbox" checked /> Semantic highlighting</label>
         <label class="check"><input id="lineNumbers" type="checkbox" checked /> Line numbers</label>
+        <label class="check"><input id="symbolFold" type="checkbox" checked /> Symbol fold arrows</label>
         <label class="check"><input id="customInput" type="checkbox" /> Use custom input</label>
         <button id="dslBtn" type="button">Register custom DSL profile</button>
       </div>
@@ -698,7 +701,7 @@ ${embeddedThemeCss}
         <p class="muted">Live output from <strong>extractSymbols(source, language)</strong> for the current code.</p>
         <table class="symbols-table">
           <thead>
-            <tr><th>Kind</th><th>Name</th><th>Start</th><th>End</th></tr>
+            <tr><th>Kind</th><th>Name</th><th>Name Range</th><th>Content Range</th></tr>
           </thead>
           <tbody id="symbolsBody"></tbody>
         </table>
@@ -749,6 +752,7 @@ ${embeddedThemeCss}
         highlight: highlightMod.highlight,
         highlightDiff: highlightMod.highlightDiff,
         diffModel: highlightMod.diffModel,
+        decorateLineTableWithSymbolBlocks: highlightMod.decorateLineTableWithSymbolBlocks,
         extractSymbols: parserMod.extractSymbols,
         registerProfile: parserMod.registerProfile,
       };
@@ -757,7 +761,7 @@ ${embeddedThemeCss}
       throw error;
     }
 
-    const { builtinThemes, highlight, highlightDiff, diffModel, extractSymbols, registerProfile } = demoApi;
+    const { builtinThemes, highlight, highlightDiff, diffModel, decorateLineTableWithSymbolBlocks, extractSymbols, registerProfile } = demoApi;
 
     const samples = ${JSON.stringify(languageSamples)};
     const defaultThemeNames = ${JSON.stringify(themeNames)};
@@ -768,6 +772,7 @@ ${embeddedThemeCss}
     const renderBtn = document.getElementById("renderBtn");
     const semanticInput = document.getElementById("semantic");
     const lineNumbersInput = document.getElementById("lineNumbers");
+    const symbolFoldInput = document.getElementById("symbolFold");
     const customInput = document.getElementById("customInput");
     const dslBtn = document.getElementById("dslBtn");
     const diffView = document.getElementById("diffView");
@@ -926,6 +931,82 @@ ${embeddedThemeCss}
       }
     }
 
+    function formatRange(range, fallbackStartLine, fallbackEndLine) {
+      if (!range || !range.start || !range.end) {
+        if (typeof fallbackStartLine === "number" || typeof fallbackEndLine === "number") {
+          const start = typeof fallbackStartLine === "number" ? fallbackStartLine : "-";
+          const end = typeof fallbackEndLine === "number" ? fallbackEndLine : start;
+          return start + " → " + end;
+        }
+        return "-";
+      }
+
+      const start = range.start.line + ":" + range.start.column;
+      const end = range.end.line + ":" + range.end.column;
+      return start + " → " + end;
+    }
+
+    function applySymbolBlocks(html, symbols, withLineNumbers) {
+      if (!withLineNumbers) return html;
+      if (!symbolFoldInput.checked) return html;
+      if (typeof decorateLineTableWithSymbolBlocks !== "function") return html;
+
+      return decorateLineTableWithSymbolBlocks(html, symbols, {
+        showFoldArrows: symbolFoldInput.checked,
+      });
+    }
+
+    function parseFoldIds(value) {
+      return String(value || "")
+        .split(",")
+        .map((part) => part.trim())
+        .filter(Boolean);
+    }
+
+    function setupSymbolFolding() {
+      document.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!target || typeof target.closest !== "function") return;
+        const button = target.closest("[data-hlts-fold-toggle]");
+        if (!button) return;
+
+        const table = button.closest("table");
+        if (!table) return;
+
+        const toggleIds = parseFoldIds(button.getAttribute("data-hlts-fold-toggle"));
+        if (!toggleIds.length) return;
+
+        const collapsedAttr = table.getAttribute("data-hlts-collapsed") || "";
+        const collapsed = new Set(parseFoldIds(collapsedAttr));
+        const shouldCollapse = !toggleIds.some((id) => collapsed.has(id));
+
+        for (const id of toggleIds) {
+          if (shouldCollapse) {
+            collapsed.add(id);
+          } else {
+            collapsed.delete(id);
+          }
+        }
+
+        table.setAttribute("data-hlts-collapsed", Array.from(collapsed).join(","));
+
+        const rows = table.querySelectorAll("tr[data-hlts-fold-members]");
+        rows.forEach((row) => {
+          const members = parseFoldIds(row.getAttribute("data-hlts-fold-members"));
+          const hide = members.some((id) => collapsed.has(id));
+          row.style.display = hide ? "none" : "";
+        });
+
+        const buttons = table.querySelectorAll("[data-hlts-fold-toggle]");
+        buttons.forEach((btn) => {
+          const ids = parseFoldIds(btn.getAttribute("data-hlts-fold-toggle"));
+          const isCollapsed = ids.some((id) => collapsed.has(id));
+          btn.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
+          btn.textContent = isCollapsed ? "▸" : "▾";
+        });
+      });
+    }
+
     function renderSymbols(source, language) {
       try {
         const symbols = extractSymbols(source, language);
@@ -937,7 +1018,7 @@ ${embeddedThemeCss}
         symbolsBody.innerHTML = symbols
           .slice(0, 24)
           .map((symbol) =>
-            '<tr><td>' + symbol.kind + '</td><td>' + symbol.name + '</td><td>' + symbol.startLine + '</td><td>' + symbol.endLine + '</td></tr>'
+            '<tr><td>' + symbol.kind + '</td><td>' + symbol.name + '</td><td>' + formatRange(symbol.nameRange, symbol.startLine, symbol.startLine) + '</td><td>' + formatRange(symbol.contentRange, symbol.startLine, symbol.endLine) + '</td></tr>'
           )
           .join("");
       } catch (error) {
@@ -950,20 +1031,31 @@ ${embeddedThemeCss}
       const source = getSelectedCode();
       const theme = themeMap.get(themeSelect.value) || builtinThemes[0];
       const withLineNumbers = lineNumbersInput.checked;
+      const symbols = (() => {
+        try {
+          return extractSymbols(source, language);
+        } catch {
+          return [];
+        }
+      })();
 
       try {
-        const selectedHtml = highlight(source, language, {
+        const selectedHtmlRaw = highlight(source, language, {
           lineNumbers: withLineNumbers,
           semanticHighlighting: semanticInput.checked,
         });
-        const baseHtml = highlight(source, language, {
+        const baseHtmlRaw = highlight(source, language, {
           lineNumbers: withLineNumbers,
           semanticHighlighting: false,
         });
-        const semanticHtml = highlight(source, language, {
+        const semanticHtmlRaw = highlight(source, language, {
           lineNumbers: withLineNumbers,
           semanticHighlighting: true,
         });
+
+        const selectedHtml = applySymbolBlocks(selectedHtmlRaw, symbols, withLineNumbers);
+        const baseHtml = applySymbolBlocks(baseHtmlRaw, symbols, withLineNumbers);
+        const semanticHtml = applySymbolBlocks(semanticHtmlRaw, symbols, withLineNumbers);
 
         preview.innerHTML = renderCode(selectedHtml, theme);
         previewOff.innerHTML = renderCode(baseHtml, theme);
@@ -1004,6 +1096,7 @@ ${embeddedThemeCss}
     });
     semanticInput.addEventListener("change", renderAll);
     lineNumbersInput.addEventListener("change", renderAll);
+    symbolFoldInput.addEventListener("change", renderAll);
     diffView.addEventListener("change", renderAll);
     diffOld.addEventListener("input", renderAll);
     diffNew.addEventListener("input", renderAll);
@@ -1049,6 +1142,7 @@ ${embeddedThemeCss}
 
     fillLanguages();
     fillThemes();
+    setupSymbolFolding();
     syncCodeThemeWithPage(true);
     languageSelect.value = "typescript";
     sourceArea.readOnly = true;

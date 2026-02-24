@@ -588,40 +588,53 @@ function detectSymbols(tokens, rules, blockSpans, skipTokens) {
       const match = tryMatch(filtered, fi, rule.pattern);
       if (!match) continue;
       const name = match.captures["name"] ?? rule.name;
-      const startToken = filtered[match.startIndex].token;
-      const startLine = startToken.range.start.line;
-      let endLine = startLine;
+      const startOriginalIndex = filtered[match.startIndex].originalIndex;
+      const lastMatchOriginalIndex = filtered[match.endIndex - 1]?.originalIndex ?? startOriginalIndex;
+      let endOriginalIndex = lastMatchOriginalIndex;
       if (rule.hasBody) {
         if (rule.bodyStyle === "braces") {
-          const afterOrigIdx = filtered[match.endIndex - 1]?.originalIndex ?? 0;
-          const block = findNextBlock(blockSpans, afterOrigIdx, "braces");
+          const block = findNextBlock(blockSpans, lastMatchOriginalIndex, "braces");
           if (block) {
-            endLine = tokens[block.closeIndex].range.end.line;
+            endOriginalIndex = block.closeIndex;
           }
         } else if (rule.bodyStyle === "indentation") {
-          const baseIndent = startToken.range.start.column;
-          endLine = findIndentationEnd(tokens, filtered[match.endIndex - 1]?.originalIndex ?? 0, baseIndent);
+          const baseIndent = tokens[startOriginalIndex].range.start.column;
+          endOriginalIndex = findIndentationEndIndex(tokens, lastMatchOriginalIndex, baseIndent);
+        } else if (rule.bodyStyle === "markup-block") {
+          endOriginalIndex = findMarkupBlockEndIndex(tokens, lastMatchOriginalIndex);
         }
       } else {
-        const lastMatchOrigIdx = filtered[match.endIndex - 1]?.originalIndex ?? 0;
-        endLine = findStatementEnd(tokens, lastMatchOrigIdx);
+        endOriginalIndex = findStatementEndIndex(tokens, lastMatchOriginalIndex);
       }
+      const nameOriginalIndex = match.captureIndices["name"] !== void 0 ? filtered[match.captureIndices["name"]].originalIndex : startOriginalIndex;
+      const nameToken = tokens[nameOriginalIndex] ?? tokens[startOriginalIndex];
+      const startToken = tokens[startOriginalIndex];
+      const endToken = tokens[endOriginalIndex] ?? tokens[lastMatchOriginalIndex];
       symbols.push({
         name,
         kind: rule.kind,
-        startLine,
-        endLine
+        nameRange: nameToken.range,
+        contentRange: {
+          start: startToken.range.start,
+          end: endToken.range.end
+        }
       });
       for (let k = match.startIndex; k < match.endIndex; k++) {
         used.add(k);
       }
     }
   }
-  symbols.sort((a, b) => a.startLine - b.startLine);
+  symbols.sort((a, b) => {
+    if (a.contentRange.start.line === b.contentRange.start.line) {
+      return a.contentRange.start.column - b.contentRange.start.column;
+    }
+    return a.contentRange.start.line - b.contentRange.start.line;
+  });
   return symbols;
 }
 function tryMatch(filtered, startIdx, pattern) {
   const captures = {};
+  const captureIndices = {};
   let idx = startIdx;
   for (let pi = 0; pi < pattern.length; pi++) {
     const step = pattern[pi];
@@ -633,7 +646,7 @@ function tryMatch(filtered, startIdx, pattern) {
       let found = false;
       const limit = Math.min(idx + maxTokens, filtered.length);
       for (let si = idx; si < limit; si++) {
-        if (matchSingleStep(filtered[si].token, nextStep, captures)) {
+        if (matchSingleStep(filtered[si].token, nextStep, captures, captureIndices, si)) {
           idx = si;
           found = true;
           break;
@@ -645,7 +658,7 @@ function tryMatch(filtered, startIdx, pattern) {
       continue;
     }
     if ("optional" in step) {
-      if (matchSingleStep(filtered[idx].token, step.optional, captures)) {
+      if (matchSingleStep(filtered[idx].token, step.optional, captures, captureIndices, idx)) {
         idx++;
       }
       continue;
@@ -653,7 +666,7 @@ function tryMatch(filtered, startIdx, pattern) {
     if ("anyOf" in step) {
       let anyMatched = false;
       for (const alt of step.anyOf) {
-        if (matchSingleStep(filtered[idx].token, alt, captures)) {
+        if (matchSingleStep(filtered[idx].token, alt, captures, captureIndices, idx)) {
           anyMatched = true;
           idx++;
           break;
@@ -666,22 +679,26 @@ function tryMatch(filtered, startIdx, pattern) {
       if (!matchTokenStep(filtered[idx].token, step)) return null;
       if (step.capture) {
         captures[step.capture] = filtered[idx].token.value;
+        captureIndices[step.capture] = idx;
       }
       idx++;
       continue;
     }
     return null;
   }
-  return { startIndex: startIdx, endIndex: idx, captures };
+  return { startIndex: startIdx, endIndex: idx, captures, captureIndices };
 }
-function matchSingleStep(token, step, captures) {
+function matchSingleStep(token, step, captures, captureIndices, index) {
   if ("token" in step) {
     if (!matchTokenStep(token, step)) return false;
-    if (step.capture) captures[step.capture] = token.value;
+    if (step.capture) {
+      captures[step.capture] = token.value;
+      captureIndices[step.capture] = index;
+    }
     return true;
   }
   if ("anyOf" in step) {
-    return step.anyOf.some((alt) => matchSingleStep(token, alt, captures));
+    return step.anyOf.some((alt) => matchSingleStep(token, alt, captures, captureIndices, index));
   }
   return false;
 }
@@ -690,46 +707,68 @@ function matchTokenStep(token, step) {
   if (step.value !== void 0 && token.value !== step.value) return false;
   return true;
 }
-function findIndentationEnd(tokens, afterIndex, baseIndent) {
-  let lastContentLine = tokens[afterIndex]?.range.start.line ?? 1;
+function findIndentationEndIndex(tokens, afterIndex, baseIndent) {
+  let lastContentIndex = afterIndex;
   let foundBody = false;
   for (let i = afterIndex + 1; i < tokens.length; i++) {
     const tok = tokens[i];
     if (tok.category === "whitespace" || tok.category === "newline") continue;
-    const line = tok.range.start.line;
     const col = tok.range.start.column;
     if (!foundBody) {
       if (col > baseIndent) {
         foundBody = true;
-        lastContentLine = line;
+        lastContentIndex = i;
       } else {
-        return lastContentLine;
+        return lastContentIndex;
       }
     } else {
       if (col <= baseIndent) {
-        return lastContentLine;
+        return lastContentIndex;
       }
-      lastContentLine = line;
+      lastContentIndex = i;
     }
   }
-  return lastContentLine;
+  return lastContentIndex;
 }
-function findStatementEnd(tokens, fromIndex) {
-  let line = tokens[fromIndex]?.range.end.line ?? 1;
+function findStatementEndIndex(tokens, fromIndex) {
+  let endIndex = fromIndex;
   let depth = 0;
   for (let i = fromIndex + 1; i < tokens.length; i++) {
     const tok = tokens[i];
     if (tok.value === "{" || tok.value === "(" || tok.value === "[") depth++;
     if (tok.value === "}" || tok.value === ")" || tok.value === "]") depth--;
     if (depth === 0) {
-      if (tok.value === ";") return tok.range.end.line;
-      if (tok.category === "newline" && depth <= 0) return line;
+      if (tok.value === ";") return i;
+      if (tok.category === "newline" && depth <= 0) return endIndex;
     }
     if (tok.category !== "whitespace" && tok.category !== "newline") {
-      line = tok.range.end.line;
+      endIndex = i;
     }
   }
-  return line;
+  return endIndex;
+}
+function findMarkupBlockEndIndex(tokens, fromIndex) {
+  let endIndex = fromIndex;
+  let blankLineCount = 0;
+  for (let i = fromIndex + 1; i < tokens.length; i++) {
+    const tok = tokens[i];
+    if (tok.category === "newline") {
+      if (i + 1 < tokens.length && tokens[i + 1].category === "newline") {
+        blankLineCount++;
+      } else {
+        blankLineCount = 0;
+      }
+      if (blankLineCount > 0) {
+        return endIndex;
+      }
+      continue;
+    }
+    if (tok.category !== "whitespace") {
+      endIndex = i;
+      blankLineCount = 0;
+    }
+  }
+  return endIndex;
 }
 
 // src/parser/structure-parser.ts
@@ -817,7 +856,49 @@ var json = {
       { name: "object", open: "{", close: "}" },
       { name: "array", open: "[", close: "]" }
     ],
-    symbols: []
+    symbols: [
+      {
+        name: "object",
+        kind: "object",
+        pattern: [{ token: "punctuation", value: "{" }],
+        hasBody: true,
+        bodyStyle: "braces"
+      },
+      {
+        name: "array",
+        kind: "array",
+        pattern: [{ token: "punctuation", value: "[" }],
+        hasBody: true,
+        bodyStyle: "braces"
+      },
+      {
+        name: "pair",
+        kind: "pair",
+        pattern: [
+          { token: "string", capture: "name" },
+          { token: "punctuation", value: ":" }
+        ],
+        hasBody: false
+      },
+      {
+        name: "string_value",
+        kind: "string",
+        pattern: [{ token: "string", capture: "name" }],
+        hasBody: false
+      },
+      {
+        name: "number_value",
+        kind: "number",
+        pattern: [{ token: "number", capture: "name" }],
+        hasBody: false
+      },
+      {
+        name: "constant_value",
+        kind: "constant",
+        pattern: [{ token: "constant", capture: "name" }],
+        hasBody: false
+      }
+    ]
   },
   grammar: {
     entry: "value",
@@ -1121,7 +1202,7 @@ var css = {
     symbols: [
       {
         name: "at_rule",
-        kind: "other",
+        kind: "directive",
         pattern: [{ token: "at_rule", capture: "name" }],
         hasBody: true,
         bodyStyle: "braces"
@@ -1408,7 +1489,7 @@ var scss = {
       },
       {
         name: "at_rule",
-        kind: "other",
+        kind: "directive",
         pattern: [{ token: "at_rule", capture: "name" }],
         hasBody: true,
         bodyStyle: "braces"
@@ -1825,7 +1906,7 @@ var python = {
       },
       {
         name: "decorated_definition",
-        kind: "other",
+        kind: "decorator",
         pattern: [{ token: "decorator", capture: "name" }],
         hasBody: false
       },
@@ -3793,7 +3874,7 @@ var cpp = {
       },
       {
         name: "template_declaration",
-        kind: "other",
+        kind: "typeParameter",
         pattern: [
           { token: "keyword", value: "template" },
           { token: "operator", value: "<" }
@@ -3983,7 +4064,29 @@ var html = {
   },
   structure: {
     blocks: [],
-    symbols: []
+    symbols: [
+      {
+        name: "doctype",
+        kind: "doctype",
+        pattern: [{ token: "doctype", capture: "name" }],
+        hasBody: false
+      },
+      {
+        name: "element",
+        kind: "element",
+        pattern: [
+          { token: "tag_open", value: "<" },
+          { token: "tag_name", capture: "name" }
+        ],
+        hasBody: false
+      },
+      {
+        name: "entity",
+        kind: "entity",
+        pattern: [{ token: "entity", capture: "name" }],
+        hasBody: false
+      }
+    ]
   },
   embeddedLanguages: [
     {
@@ -4011,7 +4114,7 @@ var markdown = {
   mimeTypes: ["text/markdown"],
   lexer: {
     tokenTypes: {
-      heading: { category: "keyword", subcategory: "heading" },
+      heading: { category: "heading" },
       code_fence_open: { category: "meta", subcategory: "code-fence" },
       code_fence_close: { category: "meta", subcategory: "code-fence" },
       code_content: { category: "string", subcategory: "code" },
@@ -4019,10 +4122,12 @@ var markdown = {
       inline_code: { category: "string", subcategory: "inline-code" },
       bold: { category: "keyword", subcategory: "bold" },
       italic: { category: "keyword", subcategory: "italic" },
-      link_text: { category: "string", subcategory: "link-text" },
-      link_url: { category: "variable", subcategory: "link-url" },
+      link_text: { category: "link", subcategory: "text" },
+      link_url: { category: "link", subcategory: "url" },
       image_marker: { category: "keyword", subcategory: "image" },
       list_marker: { category: "punctuation", subcategory: "list" },
+      table_separator: { category: "punctuation", subcategory: "table-separator" },
+      table_row: { category: "meta", subcategory: "table-row" },
       blockquote: { category: "punctuation", subcategory: "blockquote" },
       hr: { category: "punctuation", subcategory: "hr" },
       html_tag: { category: "tag" },
@@ -4148,6 +4253,22 @@ var markdown = {
             match: { kind: "string", value: ["---", "***", "___"] },
             token: "hr"
           },
+          // Table separator row
+          {
+            match: {
+              kind: "pattern",
+              regex: "\\|?\\s*:?-{3,}:?\\s*(?:\\|\\s*:?-{3,}:?\\s*)+\\|?"
+            },
+            token: "table_separator"
+          },
+          // Table row
+          {
+            match: {
+              kind: "pattern",
+              regex: "\\|[^\\n]*\\|"
+            },
+            token: "table_row"
+          },
           // Blockquote
           {
             match: {
@@ -4271,16 +4392,55 @@ var markdown = {
     symbols: [
       {
         name: "heading",
-        kind: "other",
+        kind: "heading",
         pattern: [{ token: "heading", capture: "name" }],
         hasBody: false
       },
       {
-        name: "fenced_code_block",
-        kind: "other",
+        name: "code_block",
+        kind: "codeBlock",
         pattern: [{ token: "code_fence_open", capture: "name" }],
         hasBody: true,
-        bodyStyle: "braces"
+        bodyStyle: "markup-block"
+      },
+      {
+        name: "code_span",
+        kind: "codeBlock",
+        pattern: [{ token: "inline_code", capture: "name" }],
+        hasBody: false
+      },
+      {
+        name: "list_item",
+        kind: "listItem",
+        pattern: [{ token: "list_marker", capture: "name" }],
+        hasBody: true,
+        bodyStyle: "markup-block"
+      },
+      {
+        name: "table",
+        kind: "table",
+        pattern: [{ token: "table_row", capture: "name" }],
+        hasBody: true,
+        bodyStyle: "markup-block"
+      },
+      {
+        name: "blockquote",
+        kind: "blockquote",
+        pattern: [{ token: "blockquote", capture: "name" }],
+        hasBody: true,
+        bodyStyle: "markup-block"
+      },
+      {
+        name: "link",
+        kind: "link",
+        pattern: [{ token: "link_url", capture: "name" }],
+        hasBody: false
+      },
+      {
+        name: "image",
+        kind: "image",
+        pattern: [{ token: "image_marker", capture: "name" }],
+        hasBody: false
       }
     ]
   },
@@ -4307,6 +4467,283 @@ function createGenericCodeProfile(options) {
     blockComment,
     stringDelimiters = ['"', "'"]
   } = options;
+  const keywordSet = new Set(keywords.map((keyword) => keyword.toLowerCase()));
+  const classKeywords = ["class", "object"];
+  const structKeywords = ["struct"];
+  const interfaceKeywords = ["interface", "trait", "protocol"];
+  const enumKeywords = ["enum"];
+  const functionKeywords = ["function", "fn", "def", "fun", "func", "sub"];
+  const packageKeywords = ["package"];
+  const namespaceKeywords = ["namespace"];
+  const moduleKeywords = ["module", "mod"];
+  const typeKeywords = ["type", "typealias", "typedef"];
+  const variableKeywords = ["var", "let", "val"];
+  const constantKeywords = ["const", "readonly"];
+  const importKeywords = ["import", "use", "require", "require_once", "include", "include_once", "using"];
+  const exportKeywords = ["export"];
+  const sqlObjectKeywords = [
+    "table",
+    "view",
+    "function",
+    "procedure",
+    "trigger",
+    "index",
+    "schema",
+    "database"
+  ];
+  const availableClassKeywords = classKeywords.filter((keyword) => keywordSet.has(keyword));
+  const availableStructKeywords = structKeywords.filter((keyword) => keywordSet.has(keyword));
+  const availableInterfaceKeywords = interfaceKeywords.filter((keyword) => keywordSet.has(keyword));
+  const availableEnumKeywords = enumKeywords.filter((keyword) => keywordSet.has(keyword));
+  const availableFunctionKeywords = functionKeywords.filter((keyword) => keywordSet.has(keyword));
+  const availablePackageKeywords = packageKeywords.filter((keyword) => keywordSet.has(keyword));
+  const availableNamespaceKeywords = namespaceKeywords.filter((keyword) => keywordSet.has(keyword));
+  const availableModuleKeywords = moduleKeywords.filter((keyword) => keywordSet.has(keyword));
+  const availableTypeKeywords = typeKeywords.filter((keyword) => keywordSet.has(keyword));
+  const availableVariableKeywords = variableKeywords.filter((keyword) => keywordSet.has(keyword));
+  const availableConstantKeywords = constantKeywords.filter((keyword) => keywordSet.has(keyword));
+  const availableImportKeywords = importKeywords.filter((keyword) => keywordSet.has(keyword));
+  const availableExportKeywords = exportKeywords.filter((keyword) => keywordSet.has(keyword));
+  const hasSqlCreate = keywordSet.has("create") && sqlObjectKeywords.some((keyword) => keywordSet.has(keyword));
+  const symbols = [];
+  if (availableClassKeywords.length > 0) {
+    symbols.push({
+      name: "class_declaration",
+      kind: "class",
+      pattern: [
+        {
+          anyOf: availableClassKeywords.map((keyword) => ({ token: "keyword", value: keyword }))
+        },
+        { token: "identifier", capture: "name" }
+      ],
+      hasBody: false
+    });
+  }
+  if (availableStructKeywords.length > 0) {
+    symbols.push({
+      name: "struct_declaration",
+      kind: "struct",
+      pattern: [
+        {
+          anyOf: availableStructKeywords.map((keyword) => ({ token: "keyword", value: keyword }))
+        },
+        { token: "identifier", capture: "name" }
+      ],
+      hasBody: false
+    });
+  }
+  if (availableInterfaceKeywords.length > 0) {
+    symbols.push({
+      name: "interface_declaration",
+      kind: "interface",
+      pattern: [
+        {
+          anyOf: availableInterfaceKeywords.map((keyword) => ({ token: "keyword", value: keyword }))
+        },
+        { token: "identifier", capture: "name" }
+      ],
+      hasBody: false
+    });
+  }
+  if (availableEnumKeywords.length > 0) {
+    symbols.push({
+      name: "enum_declaration",
+      kind: "enum",
+      pattern: [
+        {
+          anyOf: availableEnumKeywords.map((keyword) => ({ token: "keyword", value: keyword }))
+        },
+        { token: "identifier", capture: "name" }
+      ],
+      hasBody: false
+    });
+  }
+  if (availableFunctionKeywords.length > 0) {
+    symbols.push({
+      name: "function_declaration",
+      kind: "function",
+      pattern: [
+        {
+          anyOf: availableFunctionKeywords.map((keyword) => ({ token: "keyword", value: keyword }))
+        },
+        { token: "identifier", capture: "name" }
+      ],
+      hasBody: false
+    });
+  }
+  if (availableNamespaceKeywords.length > 0) {
+    symbols.push({
+      name: "namespace_declaration",
+      kind: "namespace",
+      pattern: [
+        {
+          anyOf: availableNamespaceKeywords.map((keyword) => ({ token: "keyword", value: keyword }))
+        },
+        { token: "identifier", capture: "name" }
+      ],
+      hasBody: false
+    });
+  }
+  if (availablePackageKeywords.length > 0) {
+    symbols.push({
+      name: "package_declaration",
+      kind: "package",
+      pattern: [
+        {
+          anyOf: availablePackageKeywords.map((keyword) => ({ token: "keyword", value: keyword }))
+        },
+        { token: "identifier", capture: "name" }
+      ],
+      hasBody: false
+    });
+  }
+  if (availableModuleKeywords.length > 0) {
+    symbols.push({
+      name: "module_declaration",
+      kind: "module",
+      pattern: [
+        {
+          anyOf: availableModuleKeywords.map((keyword) => ({ token: "keyword", value: keyword }))
+        },
+        { token: "identifier", capture: "name" }
+      ],
+      hasBody: false
+    });
+  }
+  if (availableTypeKeywords.length > 0) {
+    symbols.push({
+      name: "type_declaration",
+      kind: "type",
+      pattern: [
+        {
+          anyOf: availableTypeKeywords.map((keyword) => ({ token: "keyword", value: keyword }))
+        },
+        { token: "identifier", capture: "name" }
+      ],
+      hasBody: false
+    });
+  }
+  if (availableVariableKeywords.length > 0) {
+    symbols.push({
+      name: "variable_declaration",
+      kind: "variable",
+      pattern: [
+        {
+          anyOf: availableVariableKeywords.map((keyword) => ({ token: "keyword", value: keyword }))
+        },
+        { token: "identifier", capture: "name" }
+      ],
+      hasBody: false
+    });
+  }
+  if (availableConstantKeywords.length > 0) {
+    symbols.push({
+      name: "constant_declaration",
+      kind: "constant",
+      pattern: [
+        {
+          anyOf: availableConstantKeywords.map((keyword) => ({ token: "keyword", value: keyword }))
+        },
+        { token: "identifier", capture: "name" }
+      ],
+      hasBody: false
+    });
+  }
+  if (availableImportKeywords.length > 0) {
+    symbols.push({
+      name: "import_statement",
+      kind: "import",
+      pattern: [
+        {
+          anyOf: availableImportKeywords.map((keyword) => ({ token: "keyword", value: keyword }))
+        }
+      ],
+      hasBody: false
+    });
+  }
+  if (availableExportKeywords.length > 0) {
+    symbols.push({
+      name: "export_statement",
+      kind: "export",
+      pattern: [
+        {
+          anyOf: availableExportKeywords.map((keyword) => ({ token: "keyword", value: keyword }))
+        }
+      ],
+      hasBody: false
+    });
+  }
+  if (hasSqlCreate) {
+    const sqlCreateObjects = [
+      { keyword: "table", kind: "table", name: "create_table_statement" },
+      { keyword: "view", kind: "view", name: "create_view_statement" },
+      { keyword: "function", kind: "function", name: "create_function_statement" },
+      { keyword: "procedure", kind: "procedure", name: "create_procedure_statement" },
+      { keyword: "trigger", kind: "trigger", name: "create_trigger_statement" },
+      { keyword: "index", kind: "index", name: "create_index_statement" },
+      { keyword: "schema", kind: "schema", name: "create_schema_statement" },
+      { keyword: "database", kind: "database", name: "create_database_statement" }
+    ];
+    for (const sqlObject of sqlCreateObjects) {
+      if (!keywordSet.has(sqlObject.keyword)) {
+        continue;
+      }
+      symbols.push({
+        name: sqlObject.name,
+        kind: sqlObject.kind,
+        pattern: [
+          { token: "keyword", value: "create" },
+          {
+            optional: {
+              anyOf: [
+                { token: "keyword", value: "or" },
+                { token: "keyword", value: "replace" }
+              ]
+            }
+          },
+          {
+            optional: {
+              anyOf: [
+                { token: "keyword", value: "or" },
+                { token: "keyword", value: "replace" }
+              ]
+            }
+          },
+          { token: "keyword", value: sqlObject.keyword },
+          { token: "identifier", capture: "name" }
+        ],
+        hasBody: false
+      });
+    }
+    symbols.push({
+      name: "create_statement",
+      kind: "object",
+      pattern: [
+        { token: "keyword", value: "create" },
+        {
+          optional: {
+            anyOf: [
+              { token: "keyword", value: "or" },
+              { token: "keyword", value: "replace" }
+            ]
+          }
+        },
+        {
+          optional: {
+            anyOf: [
+              { token: "keyword", value: "or" },
+              { token: "keyword", value: "replace" }
+            ]
+          }
+        },
+        {
+          anyOf: sqlObjectKeywords.filter((keyword) => keywordSet.has(keyword)).map((keyword) => ({ token: "keyword", value: keyword }))
+        },
+        { token: "identifier", capture: "name" }
+      ],
+      hasBody: false
+    });
+  }
   const rules = [];
   if (blockComment) {
     rules.push({
@@ -4461,7 +4898,7 @@ function createGenericCodeProfile(options) {
     },
     structure: {
       blocks: [{ name: "braces", open: "{", close: "}" }],
-      symbols: []
+      symbols
     }
   };
 }
@@ -4600,7 +5037,29 @@ function createMarkupProfile(options) {
     },
     structure: {
       blocks: [],
-      symbols: []
+      symbols: [
+        {
+          name: "element",
+          kind: "element",
+          pattern: [
+            { token: "tag_open", value: "<" },
+            { token: "tag_name", capture: "name" }
+          ],
+          hasBody: false
+        },
+        {
+          name: "processing_instruction",
+          kind: "processingInstruction",
+          pattern: [{ token: "processing", capture: "name" }],
+          hasBody: false
+        },
+        {
+          name: "cdata",
+          kind: "cdata",
+          pattern: [{ token: "cdata", capture: "name" }],
+          hasBody: false
+        }
+      ]
     }
   };
 }
@@ -4622,7 +5081,7 @@ function createYamlProfile(name, displayName, fileExtensions, mimeTypes) {
       },
       tokenTypes: {
         comment: { category: "comment" },
-        key: { category: "identifier", subcategory: "key" },
+        key: { category: "key" },
         string: { category: "string" },
         number: { category: "number" },
         constant: { category: "constant" },
@@ -4704,7 +5163,53 @@ function createYamlProfile(name, displayName, fileExtensions, mimeTypes) {
     },
     structure: {
       blocks: [],
-      symbols: []
+      symbols: [
+        {
+          name: "document_separator",
+          kind: "directive",
+          pattern: [{ token: "indicator", value: "---" }],
+          hasBody: false
+        },
+        {
+          name: "document_end",
+          kind: "directive",
+          pattern: [{ token: "indicator", value: "..." }],
+          hasBody: false
+        },
+        {
+          name: "mapping_pair",
+          kind: "pair",
+          pattern: [
+            { token: "key", capture: "name" },
+            { token: "indicator", value: ":" }
+          ],
+          hasBody: false
+        },
+        {
+          name: "sequence_item",
+          kind: "listItem",
+          pattern: [{ token: "indicator", value: "-" }],
+          hasBody: false
+        },
+        {
+          name: "string_value",
+          kind: "string",
+          pattern: [{ token: "string", capture: "name" }],
+          hasBody: false
+        },
+        {
+          name: "number_value",
+          kind: "number",
+          pattern: [{ token: "number", capture: "name" }],
+          hasBody: false
+        },
+        {
+          name: "constant_value",
+          kind: "constant",
+          pattern: [{ token: "constant", capture: "name" }],
+          hasBody: false
+        }
+      ]
     }
   };
 }
@@ -5179,7 +5684,41 @@ var swift = createGenericCodeProfile({
 var shell = createGenericCodeProfile({
   name: "shell",
   displayName: "Shell",
-  fileExtensions: [".sh", ".bash", ".zsh", ".ksh"],
+  fileExtensions: [".sh", ".zsh", ".ksh"],
+  mimeTypes: ["application/x-sh"],
+  lineComment: "#",
+  keywords: [
+    "if",
+    "then",
+    "else",
+    "elif",
+    "fi",
+    "for",
+    "while",
+    "until",
+    "do",
+    "done",
+    "case",
+    "esac",
+    "in",
+    "function",
+    "select",
+    "time",
+    "coproc",
+    "return",
+    "break",
+    "continue",
+    "readonly",
+    "local",
+    "export"
+  ]
+});
+
+// src/profiles/bash.ts
+var bash = createGenericCodeProfile({
+  name: "bash",
+  displayName: "Bash",
+  fileExtensions: [".bash"],
   mimeTypes: ["application/x-sh"],
   lineComment: "#",
   keywords: [
@@ -5275,12 +5814,164 @@ var sql = createGenericCodeProfile({
 });
 
 // src/profiles/toml.ts
-var toml = createYamlProfile(
-  "toml",
-  "TOML",
-  [".toml"],
-  ["application/toml", "text/toml"]
-);
+var toml = {
+  name: "toml",
+  displayName: "TOML",
+  version: "1.0.0",
+  fileExtensions: [".toml"],
+  mimeTypes: ["application/toml", "text/toml"],
+  lexer: {
+    charClasses: {
+      keyStart: {
+        union: [{ predefined: "letter" }, { chars: "_-" }]
+      },
+      keyPart: {
+        union: [{ predefined: "alphanumeric" }, { chars: "_-" }]
+      }
+    },
+    tokenTypes: {
+      comment: { category: "comment" },
+      datetime: { category: "datetime" },
+      key: { category: "key" },
+      string: { category: "string" },
+      number: { category: "number" },
+      constant: { category: "constant" },
+      operator: { category: "operator" },
+      punctuation: { category: "punctuation" },
+      whitespace: { category: "whitespace" },
+      newline: { category: "newline" },
+      text: { category: "plain" }
+    },
+    initialState: "default",
+    skipTokens: ["whitespace", "newline"],
+    states: {
+      default: {
+        rules: [
+          { match: { kind: "line", start: "#" }, token: "comment" },
+          {
+            match: {
+              kind: "pattern",
+              regex: "\\b\\d{4}-\\d{2}-\\d{2}(?:[Tt ]\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?)?(?:[Zz]|[+-]\\d{2}:\\d{2})?\\b"
+            },
+            token: "datetime"
+          },
+          {
+            match: { kind: "delimited", open: '"""', close: '"""', multiline: true, escape: "\\" },
+            token: "string"
+          },
+          {
+            match: { kind: "delimited", open: "'''", close: "'''", multiline: true },
+            token: "string"
+          },
+          {
+            match: { kind: "delimited", open: '"', close: '"', escape: "\\" },
+            token: "string"
+          },
+          {
+            match: { kind: "delimited", open: "'", close: "'" },
+            token: "string"
+          },
+          {
+            match: {
+              kind: "number",
+              integer: true,
+              float: true,
+              scientific: true,
+              hex: true,
+              octal: true,
+              binary: true,
+              separator: "_"
+            },
+            token: "number"
+          },
+          {
+            match: {
+              kind: "keywords",
+              words: ["true", "false"]
+            },
+            token: "constant"
+          },
+          {
+            match: {
+              kind: "charSequence",
+              first: { ref: "keyStart" },
+              rest: {
+                union: [{ ref: "keyPart" }, { chars: "." }]
+              }
+            },
+            token: "key"
+          },
+          {
+            match: { kind: "string", value: "=" },
+            token: "operator"
+          },
+          {
+            match: { kind: "string", value: ["[[", "]]", "[", "]", "{", "}", ","] },
+            token: "punctuation"
+          },
+          {
+            match: {
+              kind: "charSequence",
+              first: { predefined: "whitespace" },
+              rest: { predefined: "whitespace" }
+            },
+            token: "whitespace"
+          },
+          {
+            match: { kind: "charSequence", first: { predefined: "newline" } },
+            token: "newline"
+          },
+          {
+            match: {
+              kind: "charSequence",
+              first: { predefined: "any" },
+              rest: { negate: { predefined: "newline" } }
+            },
+            token: "text"
+          }
+        ]
+      }
+    }
+  },
+  structure: {
+    blocks: [
+      { name: "tables", open: "[", close: "]" },
+      { name: "inline-table", open: "{", close: "}" },
+      { name: "array", open: "[", close: "]" }
+    ],
+    symbols: [
+      {
+        name: "table",
+        kind: "table",
+        pattern: [
+          { token: "punctuation", value: "[" },
+          { token: "key", capture: "name" },
+          { token: "punctuation", value: "]" }
+        ],
+        hasBody: false
+      },
+      {
+        name: "array_table",
+        kind: "arrayTable",
+        pattern: [
+          { token: "punctuation", value: "[[" },
+          { token: "key", capture: "name" },
+          { token: "punctuation", value: "]]" }
+        ],
+        hasBody: false
+      },
+      {
+        name: "key_value",
+        kind: "pair",
+        pattern: [
+          { token: "key", capture: "name" },
+          { token: "operator", value: "=" }
+        ],
+        hasBody: false
+      }
+    ]
+  }
+};
 
 // src/profiles/resolver.ts
 function resolveProfile(profile, registry) {
@@ -5372,6 +6063,7 @@ var builtinProfiles = [
   kotlin,
   swift,
   shell,
+  bash,
   sql,
   toml
 ];
@@ -5423,6 +6115,7 @@ function resolveLanguage(language) {
 export {
   CharReader,
   CompiledLexer,
+  bash,
   builtinProfiles,
   compileCharClass,
   compileMatcher,

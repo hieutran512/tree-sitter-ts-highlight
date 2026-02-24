@@ -88,6 +88,11 @@
   -webkit-user-select: none;
 }
 
+.hlts-solarized-light .hlts-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
 .hlts-solarized-light .hlts-table tr:hover {
   background: rgba(0, 0, 0, 0.03);
 }

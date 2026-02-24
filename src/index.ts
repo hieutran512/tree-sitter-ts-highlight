@@ -220,6 +220,13 @@ export { renderTokensToHtml } from "./html/renderer.js";
 export { renderDiffToHtml } from "./html/diff-renderer.js";
 export { wrapInLines, groupTokensByLine } from "./html/line-wrapper.js";
 export type { LineGroup } from "./html/line-wrapper.js";
+export {
+  decorateLineTableWithSymbolBlocks,
+} from "./html/symbol-blocks.js";
+export type {
+  SymbolLike,
+  SymbolBlockOptions,
+} from "./html/symbol-blocks.js";
 export { escapeHtml } from "./html/escaper.js";
 export { renderTokensToAnsi } from "./ansi/renderer.js";
 export { createDiffModel, createDiffModelWithTokens } from "./diff/model.js";

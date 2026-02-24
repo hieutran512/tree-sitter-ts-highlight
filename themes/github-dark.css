@@ -88,6 +88,11 @@
   -webkit-user-select: none;
 }
 
+.hlts-github-dark .hlts-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
 .hlts-github-dark .hlts-table tr:hover {
   background: rgba(255, 255, 255, 0.03);
 }
